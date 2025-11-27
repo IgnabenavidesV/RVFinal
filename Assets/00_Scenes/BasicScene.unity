@@ -992,12 +992,24 @@ PrefabInstance:
       value: XR Origin Hands (XR Rig)
       objectReference: {fileID: 0}
     - target: {fileID: 4872152974278578403, guid: 414ce67608a8ae440af0191a8ada5200, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4872152974278578403, guid: 414ce67608a8ae440af0191a8ada5200, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4872152974278578403, guid: 414ce67608a8ae440af0191a8ada5200, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4872152974278578403, guid: 414ce67608a8ae440af0191a8ada5200, type: 3}
       propertyPath: m_LocalPosition.x
       value: -13.22818
       objectReference: {fileID: 0}
     - target: {fileID: 4872152974278578403, guid: 414ce67608a8ae440af0191a8ada5200, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.156
+      value: 2.2
       objectReference: {fileID: 0}
     - target: {fileID: 4872152974278578403, guid: 414ce67608a8ae440af0191a8ada5200, type: 3}
       propertyPath: m_LocalPosition.z
