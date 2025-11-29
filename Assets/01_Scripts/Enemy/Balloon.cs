@@ -82,4 +82,12 @@ public class Balloon : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
+
+    void Die()
+    {
+        waveManager.OnEnemyKilled();
+        Destroy(gameObject);
+    }
+
 }
