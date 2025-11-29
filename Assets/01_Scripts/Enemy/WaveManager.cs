@@ -15,6 +15,12 @@ public class WaveManager : MonoBehaviour
     private int enemiesSpawned = 0;
     private int enemiesAlive = 0;
 
+    [Header("Dificultad")]
+    public float enemySpeedMultiplier = 0.10f;  // 10% por oleada
+    public float enemyLifeMultiplier = 0.20f;   // 20% por oleada
+    public float spawnRateMultiplier = 0.05f;   // reduce 0.05 segundos por oleada
+    public float strategyReductionPerWave = 0.2f;
+
     void Start()
     {
         if (spawner == null)
@@ -39,15 +45,19 @@ public class WaveManager : MonoBehaviour
             yield return new WaitForSeconds(spawnInterval);
         }
 
-        // ESPERAR HASTA QUE TODOS MUERAN
+        // ESPERAR A QUE MUERAN TODOS
         yield return new WaitUntil(() => enemiesAlive <= 0);
 
-        // TIEMPO EXTRA DE ESTRATEGIA
+        // TIEMPO EXTRA
         yield return new WaitForSeconds(strategyTime);
 
         // SIGUIENTE WAVE
         currentWave++;
         enemiesPerWave += 2;
+
+        // AUMENTAR DIFICULTAD
+        spawnInterval = Mathf.Max(0.2f, spawnInterval - spawnRateMultiplier);
+        strategyTime = Mathf.Max(0f, strategyTime - strategyReductionPerWave);
 
         StartCoroutine(RunWave());
     }
@@ -63,11 +73,16 @@ public class WaveManager : MonoBehaviour
             return;
         }
 
+        // Escalar dificultad por wave
+        float waveFactor = currentWave - 1;
+
+        balloon.speed += balloon.speed * (enemySpeedMultiplier * waveFactor);
+        balloon.life += Mathf.RoundToInt(balloon.life * (enemyLifeMultiplier * waveFactor));
+
         balloon.waveManager = this;
         enemiesAlive++;
     }
 
-    // LLAMADO DESDE EL ENEMIGO CUANDO MUERE
     public void OnEnemyKilled()
     {
         enemiesAlive--;
