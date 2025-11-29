@@ -8,22 +8,22 @@ public class Balloon : MonoBehaviour
     [HideInInspector] public Transform[] path;
     private int currentPoint = 0;
 
-    // Variables para el efecto de globo aerostático
-    public float floatAmplitude = 0.02f; // altura mínima, en unidades de Unity (~1-2 pixeles)
-    public float floatFrequency = 1f;    // velocidad del vaivén
-    public float rotationSpeed = 20f;    // grados por segundo
+    // Efecto de flotación
+    public float floatAmplitude = 0.02f;
+    public float floatFrequency = 1f;
+    public float rotationSpeed = 20f;
 
     private Vector3 startPos;
 
+    // Referencia al WaveManager
+    [HideInInspector] public WaveManager waveManager;
+
     void Start()
     {
-        // Guardar posición inicial para el movimiento vertical
         startPos = transform.position;
 
-        // Buscar automáticamente el objeto "Waypoints"
         Transform wp = GameObject.Find("Waypoints").transform;
 
-        // Crear array con sus hijos (WP0, WP1, WP2...)
         path = new Transform[wp.childCount];
         for (int i = 0; i < wp.childCount; i++)
         {
@@ -44,7 +44,7 @@ public class Balloon : MonoBehaviour
             speed * Time.deltaTime
         );
 
-        // Movimiento vertical sutil (flotación)
+        // Movimiento vertical sutil
         float yOffset = Mathf.Sin(Time.time * floatFrequency) * floatAmplitude;
         transform.position = new Vector3(transform.position.x, transform.position.y + yOffset, transform.position.z);
 
@@ -55,8 +55,17 @@ public class Balloon : MonoBehaviour
         if (Vector3.Distance(transform.position, target.position) < 0.1f)
         {
             currentPoint++;
+
+            // Si ya pasó todos los puntos
             if (currentPoint >= path.Length)
             {
+                // Aquí puedes restar vida al jugador si lo usas
+                // GameManager.Instance.LoseLife();
+
+                // Avisar al WaveManager que este globo murió
+                if (waveManager != null)
+                    waveManager.OnEnemyKilled();
+
                 Destroy(gameObject);
             }
         }
@@ -67,6 +76,9 @@ public class Balloon : MonoBehaviour
         life -= dmg;
         if (life <= 0)
         {
+            if (waveManager != null)
+                waveManager.OnEnemyKilled();
+
             Destroy(gameObject);
         }
     }
