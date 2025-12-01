@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 public class Balloon : MonoBehaviour
 {
@@ -16,8 +17,16 @@ public class Balloon : MonoBehaviour
 
     [HideInInspector] public WaveManager waveManager;
 
+    // --- SISTEMA DE SLOW ---
+    private float originalSpeed;
+    private float slowTimer = 0f;
+    private bool isStunned = false;
+    private bool isBurning = false;
+    private bool isPoisoned = false;
+
     void Start()
     {
+        originalSpeed = speed;
         startPos = transform.position;
 
         Transform wp = GameObject.Find("Waypoints").transform;
@@ -31,6 +40,16 @@ public class Balloon : MonoBehaviour
 
     void Update()
     {
+        // Contador del slow
+        if (slowTimer > 0)
+        {
+            slowTimer -= Time.deltaTime;
+            if (slowTimer <= 0)
+            {
+                speed = originalSpeed; // Se recupera
+            }
+        }
+
         if (path == null || path.Length == 0) return;
 
         Transform target = path[currentPoint];
@@ -64,6 +83,72 @@ public class Balloon : MonoBehaviour
         }
     }
 
+    public void ApplySlow(float percent, float duration)
+    {
+        speed = originalSpeed * (1f - percent);
+        slowTimer = duration;
+    }
+    public void ApplyStun(float duration)
+    {
+        if (isStunned) return;
+        StartCoroutine(StunRoutine(duration));
+    }
+
+    private IEnumerator StunRoutine(float duration)
+    {
+        isStunned = true;
+        float originalSpeed = speed;
+        speed = 0;   // Detener movimiento
+
+        yield return new WaitForSeconds(duration);
+
+        speed = originalSpeed;
+        isStunned = false;
+    }
+    public void ApplyBurn(float duration, float dps)
+    {
+        if (isBurning) return;
+        StartCoroutine(BurnRoutine(duration, dps));
+    }
+
+    private IEnumerator BurnRoutine(float duration, float dps)
+    {
+        isBurning = true;
+
+        float timer = 0f;
+        float tick = 0.5f;   // daño cada medio segundo
+
+        while (timer < duration)
+        {
+            TakeDamage(Mathf.RoundToInt(dps * tick)); // daño proporcional
+            timer += tick;
+            yield return new WaitForSeconds(tick);
+        }
+
+        isBurning = false;
+    }
+    public void ApplyPoison(float duration, float dps)
+    {
+        // Si ya está envenenado, reinicia el veneno
+        StartCoroutine(PoisonRoutine(duration, dps));
+    }
+
+    private IEnumerator PoisonRoutine(float duration, float dps)
+    {
+        isPoisoned = true;
+
+        float timer = 0f;
+        float tick = 1f; // daño cada segundo
+
+        while (timer < duration)
+        {
+            TakeDamage(Mathf.RoundToInt(dps * tick));
+            timer += tick;
+            yield return new WaitForSeconds(tick);
+        }
+
+        isPoisoned = false;
+    }
     public void TakeDamage(int dmg)
     {
         life -= dmg;
@@ -76,11 +161,4 @@ public class Balloon : MonoBehaviour
         }
     }
 
-    void Die()
-    {
-        if (waveManager != null)
-            waveManager.OnEnemyKilled();
-
-        Destroy(gameObject);
-    }
 }
