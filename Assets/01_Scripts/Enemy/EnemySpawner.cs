@@ -3,17 +3,10 @@ using UnityEngine;
 public class EnemySpawner : MonoBehaviour
 {
     public GameObject balloonPrefab;
-    public float spawnInterval = 2f;
+    public float spawnInterval = 1.5f;
 
-    private float timer;
-
-    void Update()
+    public void SpawnEnemy()
     {
-        timer += Time.deltaTime;
-        if (timer >= spawnInterval)
-        {
-            Instantiate(balloonPrefab, transform.position, Quaternion.identity);
-            timer = 0;
-        }
+        Instantiate(balloonPrefab, transform.position, Quaternion.identity);
     }
 }
