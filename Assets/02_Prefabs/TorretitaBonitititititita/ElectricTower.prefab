@@ -362,7 +362,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c3a364258a426a479e5796d97cb26e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElectricTower
-  range: 8
+  range: 15
   chainRange: 4
   maxChainTargets: 3
   fireRate: 1
