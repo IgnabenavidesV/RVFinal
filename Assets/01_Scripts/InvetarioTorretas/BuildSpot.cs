@@ -33,14 +33,9 @@ public class BuildSpot : MonoBehaviour
         if (buildManager != null)
             buildManager.OnSpotClicked(this);
     }
-
     public void PlaceTurret(GameObject turretPrefab)
     {
         if (IsOccupied || turretPrefab == null || mountPoint == null) return;
-
         placedTurret = Instantiate(turretPrefab, mountPoint.position, mountPoint.rotation);
-
-        // (opcional) si quieres que quede exactamente como hijo del spot:
-        // placedTurret.transform.SetParent(mountPoint, true);
     }
 }

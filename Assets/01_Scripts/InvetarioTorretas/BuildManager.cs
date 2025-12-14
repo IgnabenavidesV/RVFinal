@@ -6,7 +6,7 @@ public class BuildManager : MonoBehaviour
     public VRInventory inventory;
 
     [Header("Cancelar preview")]
-    public InputActionProperty cancelAction; // asigna B/Y o SecondaryButton
+    public InputActionProperty cancelAction; // usa XRI Right Interaction/Activate por ejemplo
 
     private BuildSpot pendingSpot;
     private GameObject preview;
@@ -15,6 +15,7 @@ public class BuildManager : MonoBehaviour
     [Header("Preview Float Animation")]
     public float floatAmplitude = 0.01f; // 1 cm
     public float floatSpeed = 2f;
+    public float previewFloatOffset = 0.08f;
 
     private Vector3 previewBasePos;
 
@@ -26,7 +27,6 @@ public class BuildManager : MonoBehaviour
             preview.transform.position = previewBasePos + Vector3.up * offset;
         }
     }
-
 
     private void OnEnable()
     {
@@ -54,19 +54,19 @@ public class BuildManager : MonoBehaviour
         var prefab = inventory.GetSelectedPrefab();
         if (prefab == null)
         {
-            CancelPreview();
             Debug.Log("No hay torreta seleccionada.");
+            CancelBuild();
             return;
         }
 
-        // Segundo click en el MISMO spot = confirmar
-        if (pendingSpot == spot && pendingPrefab == prefab)
+        // ? Si clickeas el MISMO spot teniendo preview => CONFIRMAR
+        if (pendingSpot == spot && pendingPrefab == prefab && preview != null)
         {
             ConfirmPlacement();
             return;
         }
 
-        // Primer click o cambiaste spot/prefab = preview
+        // ? Nuevo spot o cambiaste de torreta => preview
         pendingSpot = spot;
         pendingPrefab = prefab;
         ShowPreview(prefab, spot);
@@ -74,51 +74,54 @@ public class BuildManager : MonoBehaviour
 
     private void ShowPreview(GameObject prefab, BuildSpot spot)
     {
-        CancelPreview();
+        ClearPreviewOnly();
 
         preview = Instantiate(prefab, spot.mountPoint.position, spot.mountPoint.rotation);
 
-        // Base de la animación (un poco arriba del punto real)
-        previewBasePos = spot.mountPoint.position + Vector3.up * 0.08f;
+        previewBasePos = spot.mountPoint.position + Vector3.up * previewFloatOffset;
         preview.transform.position = previewBasePos;
 
-        MakePreview(preview); 
+        MakePreview(preview);
     }
-
 
     private void ConfirmPlacement()
     {
         if (pendingSpot == null || pendingPrefab == null) return;
 
-        // consumir del inventario (desaparece)
+        // ? Consumir del inventario
         if (!inventory.ConsumeSelected())
         {
-            CancelPreview();
+            CancelBuild();
             return;
         }
 
-        // colocar real
+        // ? Colocar torreta fija
         pendingSpot.PlaceTurret(pendingPrefab);
 
-        CancelPreview();
+        // ? Limpiar preview + estado
+        CancelBuild();
     }
 
     private void OnCancel(InputAction.CallbackContext ctx)
     {
-        CancelPreview();
+        CancelBuild();
     }
 
-    public void CancelPreview()
+    private void ClearPreviewOnly()
     {
         if (preview != null) Destroy(preview);
         preview = null;
+    }
+
+    public void CancelBuild()
+    {
+        ClearPreviewOnly();
         pendingSpot = null;
         pendingPrefab = null;
     }
 
     private void MakePreview(GameObject go)
     {
-        // Desactiva gameplay/colliders
         foreach (var c in go.GetComponentsInChildren<Collider>(true))
             c.enabled = false;
 
@@ -128,12 +131,8 @@ public class BuildManager : MonoBehaviour
         foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true))
             mb.enabled = false;
 
-        // Preview no debe bloquear ray
         int ignore = LayerMask.NameToLayer("Ignore Raycast");
         foreach (Transform t in go.GetComponentsInChildren<Transform>(true))
             t.gameObject.layer = ignore;
-
-        // (Opcional) si quieres que el preview sea “fantasma”, aquí podrías cambiar materiales,
-        // pero lo dejamos simple.
     }
 }
