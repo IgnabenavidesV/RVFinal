@@ -19,6 +19,11 @@ public class Enemy : MonoBehaviour
     public float floatFrequencyX = 0.5f; // velocidad horizontal
     public float rotationSpeed = 20f;    // rotación lenta
 
+    [Header("Audio")]
+    public AudioClip deathClip;    // Sonido al morir
+    public AudioClip reachGoalClip; // Sonido al llegar a la meta
+    private AudioSource audioSource;
+
     private Vector3 startPos;
     private int currentHealth;
     private bool isDead = false;
@@ -28,6 +33,13 @@ public class Enemy : MonoBehaviour
         currentHealth = maxHealth;
         gameObject.tag = "Enemy";
         startPos = transform.position;
+
+        // Añadir AudioSource si no existe
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
     }
 
     private void Update()
@@ -106,7 +118,14 @@ public class Enemy : MonoBehaviour
         if (isDead) return;
         isDead = true;
 
-        Destroy(gameObject);
+        // Reproducir sonido de muerte
+        if (deathClip != null)
+        {
+            audioSource.PlayOneShot(deathClip);
+        }
+
+        // Destruir después de reproducir el audio
+        Destroy(gameObject, deathClip != null ? deathClip.length : 0f);
     }
 
     public void ReachGoal()
@@ -115,6 +134,13 @@ public class Enemy : MonoBehaviour
         isDead = true;
 
         Debug.Log($"Enemy llegó a la meta y hace {damageToPlayer} de daño");
-        Destroy(gameObject);
+
+        // Reproducir sonido al llegar a la meta
+        if (reachGoalClip != null)
+        {
+            audioSource.PlayOneShot(reachGoalClip);
+        }
+
+        Destroy(gameObject, reachGoalClip != null ? reachGoalClip.length : 0f);
     }
 }
