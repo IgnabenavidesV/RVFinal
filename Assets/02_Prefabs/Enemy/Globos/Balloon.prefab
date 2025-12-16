@@ -134,6 +134,8 @@ MonoBehaviour:
   floatAmplitudeX: 0.2
   floatFrequencyX: 0.5
   rotationSpeed: 20
+  deathClip: {fileID: 8300000, guid: d7a753239d4a2b849abc80b2f61bad85, type: 3}
+  reachGoalClip: {fileID: 8300000, guid: 5f02f5559dae7b045acd0425a4af8cc5, type: 3}
 --- !u!1001 &4167295263544106770
 PrefabInstance:
   m_ObjectHideFlags: 0
