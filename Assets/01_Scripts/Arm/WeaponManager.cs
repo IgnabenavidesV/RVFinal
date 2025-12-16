@@ -46,7 +46,6 @@ public class WeaponManager : MonoBehaviour
         if (bz != null)
             bz.SetEquipped(true);
     }
-
     public void UnequipWeapon()
     {
         if (equippedWeapon == null) return;
@@ -57,15 +56,21 @@ public class WeaponManager : MonoBehaviour
         if (inventory != null)
             inventory.gameObject.SetActive(true);
 
+        if (inventoryInput != null)
+            inventoryInput.enabled = true;
+
+        if (buildManager != null)
+            buildManager.enabled = true;
+
         if (pickupObject != null)
-            pickupObject.SetActive(true);
+            StartCoroutine(ReenablePickupNextFrame(pickupObject));
 
         pickupObject = null;
-        var bz = equippedWeapon.GetComponentInChildren<BazookaWeapon>(true);
-        if (bz != null) bz.SetEquipped(false);
-        if (inventory != null) inventory.gameObject.SetActive(true);
-        if (inventoryInput != null) inventoryInput.enabled = true;
-        if (buildManager != null) buildManager.enabled = true;
+    }
 
+    private System.Collections.IEnumerator ReenablePickupNextFrame(GameObject obj)
+    {
+        yield return null; // ? esperar 1 frame
+        if (obj != null) obj.SetActive(true);
     }
 }
