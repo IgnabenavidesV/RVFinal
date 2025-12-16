@@ -1134,6 +1134,7 @@ MonoBehaviour:
   currentWave: 1
   strategyPhaseActive: 1
   strategyTime: 5
+  money: 0
 --- !u!4 &77389707
 Transform:
   m_ObjectHideFlags: 0
@@ -25171,7 +25172,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1846889977}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e0ae008847866484898ba8f6770a3630, type: 3}
   m_Name: 
@@ -25179,8 +25180,24 @@ MonoBehaviour:
   enemies:
   - prefab: {fileID: 8050892137209479373, guid: 7e6d503930ff1e141b4d6f2f42d21cfb, type: 3}
     minWave: 1
+    probability: 1
+    isBoss: 0
+  - prefab: {fileID: 4257656672479869153, guid: 3751d186111da8041bc0aa507be02b8f, type: 3}
+    minWave: 1
     probability: 0
     isBoss: 0
+  - prefab: {fileID: 2630533939110748266, guid: 6caae78b73b59054f82087d9ecddd098, type: 3}
+    minWave: 10
+    probability: 1
+    isBoss: 0
+  - prefab: {fileID: 2583547309570416492, guid: 71abf7a725e4f454d8be60211bf47041, type: 3}
+    minWave: 10
+    probability: 1
+    isBoss: 0
+  - prefab: {fileID: 8645780132721520137, guid: 53f4e1e73b9754940be22b8d9453ada3, type: 3}
+    minWave: 10
+    probability: 1
+    isBoss: 1
 --- !u!1 &1847480027
 GameObject:
   m_ObjectHideFlags: 0
@@ -29173,11 +29190,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaveManager
   spawner: {fileID: 1846889979}
-  enemiesPerWave: 1
+  currentWave: 2
+  baseEnemiesPerWave: 5
   spawnInterval: 1
   speedPerWave: 0.08
-  healthPerWave: 0.15
-  currentWave: 2
+  lifePerWave: 0.15
 --- !u!4 &2084775161
 Transform:
   m_ObjectHideFlags: 0

@@ -103,12 +103,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f326d268829ce54ebc2b12fe00fcda7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Balloon
+  health: 30
   speed: 2
-  life: 100
   path: []
-  floatAmplitude: 0.003
-  floatFrequency: 1
-  rotationSpeed: 20
   waveManager: {fileID: 0}
 --- !u!54 &5148550027757438736
 Rigidbody:

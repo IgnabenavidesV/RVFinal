@@ -10,7 +10,9 @@ public class BazookaWeapon : MonoBehaviour
     public InputActionProperty fireAction;
     public InputActionProperty holsterAction;
 
+
     private float lastFireTime = -999f;
+    public AudioClip shootClip;
 
     // ? Solo se permite disparar cuando el WeaponManager lo arma
     private bool isEquipped = false;
@@ -77,14 +79,16 @@ public class BazookaWeapon : MonoBehaviour
     private void OnFire(InputAction.CallbackContext ctx)
     {
         if (!isEquipped) return;
-
-        Debug.Log("?? DISPARO");
-
         if (Time.time - lastFireTime < fireCooldown) return;
+
         lastFireTime = Time.time;
 
         if (firePoint == null || projectilePrefab == null) return;
 
         Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
+
+        if (shootClip != null)
+            AudioSource.PlayClipAtPoint(shootClip, firePoint.position);
     }
+
 }

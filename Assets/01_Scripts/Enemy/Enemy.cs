@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    [Header("Stats (Inspector manda)")]
+    [Header("Stats (Inspector)")]
     [Min(1)] public int health = 3;
     public int damageToPlayer = 1;
     public float moveSpeed = 2f;
@@ -23,6 +23,9 @@ public class Enemy : MonoBehaviour
     public AudioClip deathClip;
     public AudioClip reachGoalClip;
 
+    [Header("Economía")]
+    public int moneyReward = 5; // Editable en el inspector
+
     [HideInInspector] public WaveManager waveManager;
 
     private AudioSource audioSource;
@@ -41,7 +44,7 @@ public class Enemy : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
 
-        // Si quieres tag, ponlo en el prefab, pero si tu proyecto depende:
+        // Tag del enemigo
         gameObject.tag = "Enemy";
     }
 
@@ -96,7 +99,6 @@ public class Enemy : MonoBehaviour
         if (isDead) return;
 
         health -= amount;
-        Debug.Log($"[Enemy] {name} HIT dmg={amount} hp={health}");
 
         if (health <= 0) Die();
     }
@@ -175,6 +177,9 @@ public class Enemy : MonoBehaviour
         isDead = true;
 
         waveManager?.OnEnemyKilled();
+
+        // Dar dinero al jugador
+        GameManager.Instance.AddMoney(moneyReward);
 
         if (deathClip != null) audioSource.PlayOneShot(deathClip);
         Destroy(gameObject, deathClip != null ? deathClip.length : 0f);

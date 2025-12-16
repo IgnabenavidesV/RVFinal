@@ -11,8 +11,20 @@ public class IceTower : MonoBehaviour
     public Transform shootPoint;
     public GameObject iceProjectilePrefab;
 
+    [Header("Audio")]
+    public AudioClip shootClip;
+    private AudioSource audioSource;
+
     private float fireTimer = 0f;
     private Transform currentTarget;
+
+    void Awake()
+    {
+        // Detecta automáticamente o crea AudioSource
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
+    }
 
     void Update()
     {
@@ -56,8 +68,13 @@ public class IceTower : MonoBehaviour
 
     void Shoot()
     {
+        // Disparo
         GameObject go = Instantiate(iceProjectilePrefab, shootPoint.position, shootPoint.rotation);
         var p = go.GetComponent<IceProjectile>();
         p.SetTarget(currentTarget);
+
+        // Audio
+        if (shootClip != null)
+            audioSource.PlayOneShot(shootClip);
     }
 }

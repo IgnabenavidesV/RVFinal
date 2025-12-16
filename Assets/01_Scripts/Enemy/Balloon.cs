@@ -3,16 +3,17 @@ using UnityEngine;
 
 public class Balloon : MonoBehaviour
 {
-    [Header("Boss Stats (Inspector manda)")]
+    [Header("Stats")]
     [Min(1)] public int health = 30;
     public float speed = 1.5f;
+
+    [Header("Economía")]
+    public int moneyReward = 50; // Editable en inspector
 
     [HideInInspector] public Transform[] path;
     [HideInInspector] public WaveManager waveManager;
 
     private int currentPoint = 0;
-
-    // efectos
     private float originalSpeed;
     private float slowTimer = 0f;
     private bool isStunned = false;
@@ -22,11 +23,7 @@ public class Balloon : MonoBehaviour
     private void Awake()
     {
         originalSpeed = speed;
-
-        // si quieres que la torre lo encuentre por tag:
-        gameObject.tag = "Enemy";
-        // y si quieres distinguirlo:
-        // gameObject.tag = "Boss";  (pero entonces tu torre debe buscar Boss también)
+        gameObject.tag = "Boss"; // Tag obligatorio para tu proyectil
     }
 
     void Update()
@@ -58,11 +55,14 @@ public class Balloon : MonoBehaviour
     public void TakeDamage(int dmg)
     {
         health -= dmg;
-        Debug.Log($"[Boss] {name} HIT dmg={dmg} hp={health}");
 
         if (health <= 0)
         {
             waveManager?.OnEnemyKilled();
+
+            // Dar dinero al jugador
+            GameManager.Instance.AddMoney(moneyReward);
+
             Destroy(gameObject);
         }
     }

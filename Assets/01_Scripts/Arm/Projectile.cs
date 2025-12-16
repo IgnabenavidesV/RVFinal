@@ -29,15 +29,17 @@ public class Projectile : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // ?? SOLO daña al Boss
-        //if (other.CompareTag("Boss"))
-        //{
-        //    BossHealth boss = other.GetComponent<BossHealth>();
-        //    if (boss != null)
-        //        boss.TakeDamage(damage);
-        //}
+        // SOLO daña al Boss
+        if (other.CompareTag("Boss"))
+        {
+            // Obtener el componente Balloon en vez de BossHealth
+            Balloon boss = other.GetComponent<Balloon>();
+            if (boss != null)
+                boss.TakeDamage(Mathf.RoundToInt(damage));
+        }
 
         // El proyectil desaparece SIEMPRE al impactar
         Destroy(gameObject);
     }
+
 }

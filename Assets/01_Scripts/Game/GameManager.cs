@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using UnityEngine.SceneManagement;
+
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
@@ -17,12 +18,16 @@ public class GameManager : MonoBehaviour
     public float strategyTime = 5f;
     private float strategyTimer = 0f;
 
+    [Header("Economía")]
+    public int money = 0; // Dinero actual del jugador
+
     // === EVENTOS PARA UIManager ===
     public event Action<int> OnLivesChanged;
     public event Action<int> OnWaveChanged;
     public event Action<bool> OnStrategyPhaseChanged;
     public event Action<float> OnStrategyTimeTick;
     public event Action OnGameOver;
+    public event Action<int> OnMoneyChanged; // Evento para UI del dinero
 
     void Awake()
     {
@@ -41,8 +46,8 @@ public class GameManager : MonoBehaviour
         currentWave = 1;
         OnLivesChanged?.Invoke(currentLives);
         OnWaveChanged?.Invoke(currentWave);
+        OnMoneyChanged?.Invoke(money);
     }
-
 
     // -------------------------------------------------------
     // Daño al jugador
@@ -61,9 +66,7 @@ public class GameManager : MonoBehaviour
     void TriggerGameOver()
     {
         OnGameOver?.Invoke();
-
-        // Reiniciar el juego
-        Time.timeScale = 1f; // Asegurarse de que el tiempo no esté pausado
+        Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
@@ -99,5 +102,25 @@ public class GameManager : MonoBehaviour
 
         strategyPhaseActive = false;
         OnStrategyPhaseChanged?.Invoke(false);
+    }
+
+    // -------------------------------------------------------
+    // Manejo de dinero
+    // -------------------------------------------------------
+    public void AddMoney(int amount)
+    {
+        money += amount;
+        OnMoneyChanged?.Invoke(money);
+    }
+
+    public bool SpendMoney(int amount)
+    {
+        if (money >= amount)
+        {
+            money -= amount;
+            OnMoneyChanged?.Invoke(money);
+            return true;
+        }
+        return false; // No hay suficiente dinero
     }
 }
