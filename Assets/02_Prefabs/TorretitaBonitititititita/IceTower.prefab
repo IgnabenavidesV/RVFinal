@@ -399,7 +399,7 @@ MonoBehaviour:
   range: 8
   fireRate: 1
   rotationSpeed: 5
-  head: {fileID: 3065115415342555119}
+  head: {fileID: 2207874699530116301}
   shootPoint: {fileID: 4172833135132241685}
   iceProjectilePrefab: {fileID: 2029822879806288538, guid: 9d44393625f876040956a57111fe040d, type: 3}
   shootClip: {fileID: 8300000, guid: c288bde7ea441594e94f338c0dc1cb8b, type: 3}

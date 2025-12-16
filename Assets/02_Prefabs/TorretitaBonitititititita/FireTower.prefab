@@ -398,7 +398,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FireTower
   range: 15
   fireRate: 1
-  head: {fileID: 3065115415342555119}
+  head: {fileID: 7986583257420975864}
   shootPoint: {fileID: 4172833135132241685}
   fireProjectilePrefab: {fileID: 7249382915568071819, guid: dc9293b0497589443bb721b382d35991, type: 3}
   shootAudioClip: {fileID: 8300000, guid: adb148a314dcd084881c94105691adf1, type: 3}

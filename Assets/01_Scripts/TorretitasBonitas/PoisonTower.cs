@@ -3,57 +3,92 @@ using System.Linq;
 
 public class PoisonTower : MonoBehaviour
 {
+    [Header("Tower Stats")]
     public float range = 8f;
     public float fireRate = 1.2f;
+    public float rotationSpeed = 5f;
+
+    [Header("References")]
     public Transform head;
     public Transform shootPoint;
-
     public GameObject poisonProjectilePrefab;
 
-    private float cooldown = 0f;
-    private Balloon target;
+    [Header("Audio")]
+    public AudioClip shootClip;
+    private AudioSource audioSource;
+
+    private float fireTimer = 0f;
+    private Transform currentTarget;
+
+    void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+        if (shootPoint == null) shootPoint = head;
+    }
 
     void Update()
     {
-        cooldown -= Time.deltaTime;
+        fireTimer -= Time.deltaTime;
 
         FindTarget();
 
-        if (target != null)
+        if (currentTarget != null)
         {
-            RotateTowardsTarget();
+            RotateHead();
+            AimShootPoint();
 
-            if (cooldown <= 0f)
+            if (fireTimer <= 0f)
             {
                 Shoot();
-                cooldown = 1f / fireRate;
+                fireTimer = 1f / fireRate;
             }
         }
     }
 
     void FindTarget()
     {
-        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        var enemies = GameObject.FindGameObjectsWithTag("Enemy");
 
-        target = enemies
-            .Select(e => e.GetComponent<Balloon>())
-            .Where(b => b != null && Vector3.Distance(transform.position, b.transform.position) <= range)
-            .OrderBy(b => Vector3.Distance(transform.position, b.transform.position))
+        currentTarget = enemies
+            .Where(e => Vector3.Distance(transform.position, e.transform.position) <= range)
+            .OrderBy(e => Vector3.Distance(transform.position, e.transform.position))
+            .Select(e => e.transform)
             .FirstOrDefault();
     }
 
-    void RotateTowardsTarget()
+    void RotateHead()
     {
-        Vector3 dir = target.transform.position - head.position;
-        Quaternion rot = Quaternion.LookRotation(dir);
-        head.rotation = Quaternion.Lerp(head.rotation, rot, Time.deltaTime * 5f);
+        if (currentTarget == null || head == null)
+            return;
+
+        Vector3 dir = currentTarget.position - head.position;
+        dir.y = 0; // solo horizontal
+
+        if (dir.sqrMagnitude > 0.001f)
+        {
+            Quaternion targetRot = Quaternion.LookRotation(dir);
+            head.rotation = Quaternion.Lerp(head.rotation, targetRot, rotationSpeed * Time.deltaTime);
+        }
+    }
+
+    void AimShootPoint()
+    {
+        if (shootPoint != null && currentTarget != null)
+            shootPoint.LookAt(currentTarget.position); // apuntar al objetivo
     }
 
     void Shoot()
     {
+        if (poisonProjectilePrefab == null || shootPoint == null) return;
+
         GameObject proj = Instantiate(poisonProjectilePrefab, shootPoint.position, shootPoint.rotation);
 
         PoisonProjectile p = proj.GetComponent<PoisonProjectile>();
-        p.SetTarget(target.transform);
+        if (p != null)
+            p.SetTarget(currentTarget);
+
+        if (shootClip != null)
+            audioSource.PlayOneShot(shootClip);
     }
 }

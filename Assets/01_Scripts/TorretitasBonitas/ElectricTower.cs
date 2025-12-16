@@ -18,6 +18,8 @@ public class ElectricTower : MonoBehaviour
     public bool applySlow = false;
     [Range(0f, 1f)] public float slowPercent = 0.3f;
     public float slowDuration = 1.5f;
+    [Header("Rotation")]
+    public float rotationSpeed = 5f;
 
     public bool applyBurn = false;
     public float burnDuration = 2f;
@@ -54,7 +56,8 @@ public class ElectricTower : MonoBehaviour
         currentTarget = FindClosestTarget(range);
         if (currentTarget == null) return;
 
-        RotateTowards(currentTarget.position);
+        RotateHead();
+
 
         if (cooldown <= 0f)
         {
@@ -81,14 +84,22 @@ public class ElectricTower : MonoBehaviour
         return bestT;
     }
 
-    void RotateTowards(Vector3 worldPos)
+ 
+    void RotateHead()
     {
-        Vector3 dir = worldPos - head.position;
-        if (dir.sqrMagnitude < 0.001f) return;
-        Quaternion lookRot = Quaternion.LookRotation(dir);
-        head.rotation = Quaternion.Lerp(head.rotation, lookRot, Time.deltaTime * 8f);
-    }
+        if (currentTarget == null || head == null)
+            return;
 
+        // Dirección hacia el enemigo (solo horizontal)
+        Vector3 dir = currentTarget.position - head.position;
+        dir.y = 0; // Mantener solo rotación horizontal
+
+        if (dir.sqrMagnitude > 0.001f)
+        {
+            Quaternion targetRot = Quaternion.LookRotation(dir);
+            head.rotation = Quaternion.Lerp(head.rotation, targetRot, rotationSpeed * Time.deltaTime);
+        }
+    }
     void FireChain(Transform first)
     {
         // Lista de objetivos ya golpeados

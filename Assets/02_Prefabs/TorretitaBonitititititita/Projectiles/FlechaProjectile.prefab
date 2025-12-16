@@ -48,7 +48,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArrowProjectile
   speed: 20
-  damage: 20
+  damage: 2
   lifeTime: 3
 --- !u!54 &4347151873359542940
 Rigidbody:

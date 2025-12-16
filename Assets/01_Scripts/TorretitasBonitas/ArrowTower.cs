@@ -63,13 +63,24 @@ public class ArrowTower : MonoBehaviour
 
     void AimAtTarget()
     {
-        Vector3 dir = currentTarget.transform.position - head.position;
-        Quaternion lookRotation = Quaternion.LookRotation(dir);
-        head.rotation = Quaternion.Lerp(head.rotation, lookRotation, Time.deltaTime * rotationSpeed);
+        if (currentTarget == null || head == null)
+            return;
 
+        // Dirección hacia el enemigo (solo horizontal)
+        Vector3 dir = currentTarget.transform.position - head.position;
+        dir.y = 0;
+
+        if (dir.sqrMagnitude > 0.001f)
+        {
+            Quaternion targetRot = Quaternion.LookRotation(dir);
+            head.rotation = Quaternion.Lerp(head.rotation, targetRot, rotationSpeed * Time.deltaTime);
+        }
+
+        // Apunta el shootPoint hacia el enemigo, incluyendo altura
         if (shootPoint != null)
-            shootPoint.rotation = lookRotation;
+            shootPoint.LookAt(currentTarget.transform.position);
     }
+
 
     void Shoot()
     {

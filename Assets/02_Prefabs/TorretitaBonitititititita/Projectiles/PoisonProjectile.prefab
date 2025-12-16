@@ -98,10 +98,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PoisonProjectile
   speed: 12
-  impactDamage: 2
+  impactDamage: 1
   poisonDuration: 6
   poisonDPS: 1.5
   lifeTime: 3
+  explosionRadius: 0
 --- !u!1001 &7888870376828040940
 PrefabInstance:
   m_ObjectHideFlags: 0
