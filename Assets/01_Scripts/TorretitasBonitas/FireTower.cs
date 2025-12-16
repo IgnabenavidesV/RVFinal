@@ -9,9 +9,20 @@ public class FireTower : MonoBehaviour
     public Transform head;
     public Transform shootPoint;
     public GameObject fireProjectilePrefab;
+    public AudioClip shootAudioClip; // Audio al disparar
+    private AudioSource audioSource;
 
     private float cooldown = 0f;
     private Balloon target;
+
+    void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+    }
 
     void Update()
     {
@@ -47,13 +58,18 @@ public class FireTower : MonoBehaviour
         Vector3 dir = target.transform.position - head.position;
         Quaternion rot = Quaternion.LookRotation(dir);
         head.rotation = Quaternion.Lerp(head.rotation, rot, Time.deltaTime * 5f);
+
+        if (shootPoint != null)
+            shootPoint.rotation = head.rotation;
     }
 
     void Shoot()
     {
         GameObject proj = Instantiate(fireProjectilePrefab, shootPoint.position, shootPoint.rotation);
-
         FireProjectile p = proj.GetComponent<FireProjectile>();
         p.SetTarget(target.transform);
+
+        if (shootAudioClip != null)
+            audioSource.PlayOneShot(shootAudioClip);
     }
 }

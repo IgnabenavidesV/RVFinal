@@ -12,10 +12,20 @@ public class ArrowTower : MonoBehaviour
     public Transform head;
     public Transform shootPoint;
     public GameObject arrowPrefab;
+    public AudioClip shootAudioClip; // Audio al disparar
+    private AudioSource audioSource;
 
     private float fireCooldown;
     private List<Transform> enemiesInRange = new List<Transform>();
     private Transform currentTarget;
+
+    void Start()
+    {
+        // Configuramos AudioSource automáticamente
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
+    }
 
     void Update()
     {
@@ -31,7 +41,6 @@ public class ArrowTower : MonoBehaviour
         fireCooldown -= Time.deltaTime;
     }
 
-    // 🔎 Selecciona el enemigo más cercano
     void SelectTarget()
     {
         float shortestDist = Mathf.Infinity;
@@ -52,30 +61,33 @@ public class ArrowTower : MonoBehaviour
         currentTarget = nearestEnemy;
     }
 
-    // 🎯 Rota la cabeza hacia el objetivo
     void AimAtTarget()
     {
         Vector3 dir = currentTarget.position - head.position;
         Quaternion lookRotation = Quaternion.LookRotation(dir);
         head.rotation = Quaternion.Lerp(head.rotation, lookRotation, Time.deltaTime * rotationSpeed);
+
+        if (shootPoint != null)
+        {
+            shootPoint.rotation = lookRotation;
+        }
     }
 
-    // 🏹 Disparo de flecha
     void Shoot()
     {
         GameObject arrowObj = Instantiate(arrowPrefab, shootPoint.position, shootPoint.rotation);
         arrowObj.GetComponent<ArrowProjectile>().SetTarget(currentTarget);
 
+        if (shootAudioClip != null)
+            audioSource.PlayOneShot(shootAudioClip);
     }
 
-    // ⚠️ ENTRADA de enemigos al rango
     private void OnTriggerEnter(Collider col)
     {
         if (col.CompareTag("Enemy"))
             enemiesInRange.Add(col.transform);
     }
 
-    // ❌ SALIDA de enemigos del rango
     private void OnTriggerExit(Collider col)
     {
         if (col.CompareTag("Enemy"))

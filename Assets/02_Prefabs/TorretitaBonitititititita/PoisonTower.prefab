@@ -340,7 +340,8 @@ MonoBehaviour:
   rotationSpeed: 5
   head: {fileID: 3065115415342555119}
   shootPoint: {fileID: 4172833135132241685}
-  arrowPrefab: {fileID: 0}
+  arrowPrefab: {fileID: 7249382915568071819, guid: 943be390b72520642868542e86fcb2b3, type: 3}
+  shootAudioClip: {fileID: 0}
 --- !u!54 &5609074695794198332
 Rigidbody:
   m_ObjectHideFlags: 0
