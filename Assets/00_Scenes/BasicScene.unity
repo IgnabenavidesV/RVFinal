@@ -24787,10 +24787,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0ae008847866484898ba8f6770a3630, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
-  balloonPrefab: {fileID: 8645780132721520137, guid: 53f4e1e73b9754940be22b8d9453ada3, type: 3}
-  blimpPrefab: {fileID: 2552871303111195465, guid: e4b9044d82ac4ea49bf081c40fa29699, type: 3}
-  spawnInterval: 5
-  balloonProbability: 0.7
+  enemies:
+  - prefab: {fileID: 8050892137209479373, guid: 7e6d503930ff1e141b4d6f2f42d21cfb, type: 3}
+    minWave: 1
+    probability: 1
+    isBoss: 0
+  - prefab: {fileID: 4257656672479869153, guid: 3751d186111da8041bc0aa507be02b8f, type: 3}
+    minWave: 3
+    probability: 0.8
+    isBoss: 0
+  - prefab: {fileID: 2630533939110748266, guid: 6caae78b73b59054f82087d9ecddd098, type: 3}
+    minWave: 6
+    probability: 0.6
+    isBoss: 0
+  - prefab: {fileID: 2583547309570416492, guid: 71abf7a725e4f454d8be60211bf47041, type: 3}
+    minWave: 9
+    probability: 0.4
+    isBoss: 0
+  - prefab: {fileID: 8645780132721520137, guid: 53f4e1e73b9754940be22b8d9453ada3, type: 3}
+    minWave: 10
+    probability: 1
+    isBoss: 1
 --- !u!1 &1847480027
 GameObject:
   m_ObjectHideFlags: 0
@@ -28753,13 +28770,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WaveManager
   spawner: {fileID: 1846889979}
   currentWave: 2
-  enemiesPerWave: 3
-  spawnInterval: 4
-  strategyTime: 5
-  enemySpeedMultiplier: 0.1
-  enemyLifeMultiplier: 0.2
-  spawnRateMultiplier: 0.05
-  strategyReductionPerWave: 0.2
+  baseEnemiesPerWave: 5
+  baseSpawnInterval: 1.5
+  baseStrategyTime: 5
+  enemiesIncreasePerWave: 2
+  spawnIntervalReduction: 0.07
+  strategyReduction: 0.3
+  speedPerWave: 0.08
+  lifePerWave: 0.15
+  minSpawnInterval: 0.3
+  minStrategyTime: 1
 --- !u!4 &2084775161
 Transform:
   m_ObjectHideFlags: 0
