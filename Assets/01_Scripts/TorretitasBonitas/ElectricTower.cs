@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -12,11 +12,11 @@ public class ElectricTower : MonoBehaviour
     public int damage = 1;
 
     public Transform head;
-    public AudioClip shootAudioClip; // Audio al disparar
+    public AudioClip shootAudioClip;
     private AudioSource audioSource;
 
     private float fireCooldown = 0f;
-    private Balloon currentTarget;
+    private MonoBehaviour currentTarget; // Puede ser Balloon o Enemy
 
     void Start()
     {
@@ -48,9 +48,9 @@ public class ElectricTower : MonoBehaviour
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
 
         currentTarget = enemies
-            .Select(e => e.GetComponent<Balloon>())
-            .Where(b => b != null && Vector3.Distance(transform.position, b.transform.position) <= range)
-            .OrderBy(b => Vector3.Distance(transform.position, b.transform.position))
+            .Select(e => e.GetComponent<Balloon>() as MonoBehaviour ?? e.GetComponent<Enemy>())
+            .Where(e => e != null && Vector3.Distance(transform.position, e.transform.position) <= range)
+            .OrderBy(e => Vector3.Distance(transform.position, e.transform.position))
             .FirstOrDefault();
     }
 
@@ -63,7 +63,7 @@ public class ElectricTower : MonoBehaviour
 
     void ShootElectricRay()
     {
-        List<Balloon> hitEnemies = new();
+        List<MonoBehaviour> hitEnemies = new();
 
         ApplyEffects(currentTarget);
         hitEnemies.Add(currentTarget);
@@ -72,8 +72,8 @@ public class ElectricTower : MonoBehaviour
             audioSource.PlayOneShot(shootAudioClip);
 
         var allEnemies = GameObject.FindGameObjectsWithTag("Enemy")
-            .Select(e => e.GetComponent<Balloon>())
-            .Where(b => b != null)
+            .Select(e => e.GetComponent<Balloon>() as MonoBehaviour ?? e.GetComponent<Enemy>())
+            .Where(e => e != null)
             .ToList();
 
         var chainTargets = allEnemies
@@ -92,9 +92,31 @@ public class ElectricTower : MonoBehaviour
         Debug.DrawLine(head.position, currentTarget.transform.position, Color.yellow, 0.2f);
     }
 
-    void ApplyEffects(Balloon enemy)
+    void ApplyEffects(MonoBehaviour enemy)
     {
-        enemy.TakeDamage(damage);
-        enemy.ApplyStun(stunDuration);
+        // --- Balloon ---
+        Balloon b = enemy.GetComponent<Balloon>();
+        if (b != null)
+        {
+            b.TakeDamage(damage);
+            b.ApplyStun(stunDuration);
+            b.ApplySlow(0.5f, 2f);    // ejemplo de slow
+            b.ApplyBurn(3f, 1f);      // ejemplo de burn
+            b.ApplyPoison(4f, 1f);    // ejemplo de poison
+            return;
+        }
+
+        // --- Enemy ---
+        Enemy e = enemy.GetComponent<Enemy>();
+        if (e != null)
+        {
+            e.TakeDamage(damage);
+
+            // Para stun y slow en Enemy, agrega métodos similares a Balloon
+            e.ApplyStun(stunDuration);
+            e.ApplySlow(0.5f, 2f);
+            e.ApplyBurn(3f, 1f);
+            e.ApplyPoison(4f, 1f);
+        }
     }
 }

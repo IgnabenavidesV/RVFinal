@@ -5,7 +5,7 @@ public class IceProjectile : MonoBehaviour
     public float speed = 15f;
     public float slowPercent = 0.5f;   // 50% menos velocidad
     public float slowDuration = 2f;    // durante 2s
-    public int damage = 5;
+    public int damage = 1;
     public float lifeTime = 3f;
 
     private Transform target;

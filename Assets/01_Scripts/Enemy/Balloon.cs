@@ -160,5 +160,10 @@ public class Balloon : MonoBehaviour
             Destroy(gameObject);
         }
     }
+    public interface IDamageableStunnable
+    {
+        void TakeDamage(int amount);
+        void ApplyStun(float duration);
+    }
 
 }

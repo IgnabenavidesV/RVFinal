@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2227171799830464794}
   - component: {fileID: 7623723020679388336}
   - component: {fileID: 3145189749491648606}
+  - component: {fileID: 4711004342258743068}
   m_Layer: 0
   m_Name: IceLance
   m_TagString: Untagged
@@ -4862,6 +4863,23 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!114 &4711004342258743068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2029822879806288538}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60173aa23f478194fa688e3b86528bce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IceProjectile
+  speed: 15
+  slowPercent: 40
+  slowDuration: 5
+  damage: 1
+  lifeTime: 3
 --- !u!1 &5177397619560623715
 GameObject:
   m_ObjectHideFlags: 0
