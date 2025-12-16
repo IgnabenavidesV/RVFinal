@@ -340,6 +340,7 @@ MonoBehaviour:
   range: 15
   fireRate: 1
   rotationSpeed: 5
+  damage: 1
   head: {fileID: 1914009172332973670}
   shootPoint: {fileID: 4172833135132241685}
   arrowPrefab: {fileID: 7249382915568071819, guid: 0ed6fd9cd53245845b604ec25c9c62f0, type: 3}
