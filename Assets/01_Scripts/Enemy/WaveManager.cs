@@ -84,6 +84,14 @@ public class WaveManager : MonoBehaviour
 
         // --- Balloon ---
         Balloon balloon = enemyGO.GetComponent<Balloon>();
+        Enemy enemy = enemyGO.GetComponent<Enemy>();
+
+        // Detecta si es jefe
+        EnemyEntry entry = spawner.enemies.Find(e => e.prefab == enemyGO);
+        if (entry != null && entry.isBoss)
+        {
+            AudioManager.Instance.PlayBossMusic();
+        }
         if (balloon != null)
         {
             float waveFactor = currentWave - 1;
@@ -96,7 +104,6 @@ public class WaveManager : MonoBehaviour
         }
 
         // --- Enemy ---
-        Enemy enemy = enemyGO.GetComponent<Enemy>();
         if (enemy != null)
         {
             if (waypoints != null) enemy.SetPath(waypoints);
