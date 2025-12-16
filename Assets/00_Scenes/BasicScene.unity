@@ -9304,6 +9304,7 @@ MonoBehaviour:
   head: {fileID: 546818343}
   shootPoint: {fileID: 1341203317}
   iceProjectilePrefab: {fileID: 7249382915568071819, guid: d092f6ae12097c54ba295f8290e964c4, type: 3}
+  shootAudioClip: {fileID: 0}
 --- !u!1 &738690513
 GameObject:
   m_ObjectHideFlags: 0
@@ -29645,63 +29646,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1c68c0e88f9898c4fb1db12aee0e47a2, type: 3}
---- !u!1001 &4687055456002809266
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 5515856085518787276, guid: 0ed6fd9cd53245845b604ec25c9c62f0, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5515856085518787276, guid: 0ed6fd9cd53245845b604ec25c9c62f0, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.361
-      objectReference: {fileID: 0}
-    - target: {fileID: 5515856085518787276, guid: 0ed6fd9cd53245845b604ec25c9c62f0, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -2.53
-      objectReference: {fileID: 0}
-    - target: {fileID: 5515856085518787276, guid: 0ed6fd9cd53245845b604ec25c9c62f0, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5515856085518787276, guid: 0ed6fd9cd53245845b604ec25c9c62f0, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5515856085518787276, guid: 0ed6fd9cd53245845b604ec25c9c62f0, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5515856085518787276, guid: 0ed6fd9cd53245845b604ec25c9c62f0, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5515856085518787276, guid: 0ed6fd9cd53245845b604ec25c9c62f0, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5515856085518787276, guid: 0ed6fd9cd53245845b604ec25c9c62f0, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5515856085518787276, guid: 0ed6fd9cd53245845b604ec25c9c62f0, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7249382915568071819, guid: 0ed6fd9cd53245845b604ec25c9c62f0, type: 3}
-      propertyPath: m_Name
-      value: FlechaProjectile
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 0ed6fd9cd53245845b604ec25c9c62f0, type: 3}
 --- !u!1001 &5558483987219948352
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -29895,7 +29839,6 @@ SceneRoots:
   - {fileID: 1390440112}
   - {fileID: 415350898}
   - {fileID: 9025924358136827938}
-  - {fileID: 4687055456002809266}
   - {fileID: 976415599}
   - {fileID: 776064551}
   - {fileID: 598437116}

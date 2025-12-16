@@ -371,6 +371,7 @@ MonoBehaviour:
   stunDuration: 0.5
   damage: 1
   head: {fileID: 3065115415342555119}
+  shootAudioClip: {fileID: 8300000, guid: fee9806ec2d0df645a7f04d667afb303, type: 3}
 --- !u!1001 &2786931189376822089
 PrefabInstance:
   m_ObjectHideFlags: 0

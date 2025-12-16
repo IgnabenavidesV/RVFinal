@@ -343,7 +343,8 @@ MonoBehaviour:
   rotationSpeed: 5
   head: {fileID: 3065115415342555119}
   shootPoint: {fileID: 4172833135132241685}
-  arrowPrefab: {fileID: 0}
+  arrowPrefab: {fileID: 7249382915568071819, guid: 0ed6fd9cd53245845b604ec25c9c62f0, type: 3}
+  shootAudioClip: {fileID: 8300000, guid: 052ecc4685a785f46bb076f977f7ea53, type: 3}
 --- !u!54 &5609074695794198332
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -378,7 +379,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7848168743287034367}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7f01a35241b1c0f4c85bdd0979f11c71, type: 3}
   m_Name: 
