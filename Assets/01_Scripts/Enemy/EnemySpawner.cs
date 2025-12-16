@@ -5,23 +5,39 @@ using UnityEngine;
 [System.Serializable]
 public class EnemyEntry
 {
+    [Tooltip("Prefab del enemigo a spawnear.")]
     public GameObject prefab;
+
+    [Tooltip("Wave mínima en la que puede aparecer.")]
     public int minWave = 1;
+
+    [Tooltip("Probabilidad de que este enemigo aparezca (0 a 1).")]
     [Range(0f, 1f)]
     public float probability = 1f;
-    public bool isBoss;
+
+    [Tooltip("Indica si este enemigo es un jefe.")]
+    public bool isBoss = false;
 }
 
 public class EnemySpawner : MonoBehaviour
 {
-    [Header("Lista de enemigos")]
+    [Header("Lista de enemigos disponibles")]
     public List<EnemyEntry> enemies = new List<EnemyEntry>();
 
+    /// <summary>
+    /// Spawnea un enemigo adecuado según la wave actual.
+    /// </summary>
+    /// <param name="currentWave">Número de wave actual</param>
+    /// <returns>GameObject instanciado o null si falla</returns>
     public GameObject SpawnEnemyByWave(int currentWave)
     {
-        // ======================
-        // 1️⃣ BOSS
-        // ======================
+        if (enemies.Count == 0)
+        {
+            Debug.LogError("EnemySpawner: La lista de enemigos está vacía.");
+            return null;
+        }
+
+        // 1️⃣ Revisar jefes
         foreach (EnemyEntry e in enemies)
         {
             if (e.isBoss && e.prefab != null &&
@@ -32,9 +48,7 @@ public class EnemySpawner : MonoBehaviour
             }
         }
 
-        // ======================
-        // 2️⃣ ENEMIGOS NORMALES
-        // ======================
+        // 2️⃣ Filtrar enemigos normales válidos
         List<EnemyEntry> available = new List<EnemyEntry>();
         float totalWeight = 0f;
 
@@ -47,19 +61,13 @@ public class EnemySpawner : MonoBehaviour
             }
         }
 
-        // 🔴 PROTECCIÓN CLAVE
         if (available.Count == 0 || totalWeight <= 0f)
         {
-            Debug.LogError(
-                $"EnemySpawner: No hay enemigos válidos para la wave {currentWave}. " +
-                $"Revisa minWave y probability."
-            );
+            Debug.LogError($"EnemySpawner: No hay enemigos válidos para la wave {currentWave}. Revisa minWave y probability.");
             return null;
         }
 
-        // ======================
-        // 3️⃣ SELECCIÓN PONDERADA
-        // ======================
+        // 3️⃣ Selección ponderada aleatoria
         float rand = Random.Range(0f, totalWeight);
         float cumulative = 0f;
 
@@ -72,7 +80,7 @@ public class EnemySpawner : MonoBehaviour
             }
         }
 
-        // Fallback seguro
+        // 4️⃣ Fallback seguro
         return Instantiate(available[0].prefab, transform.position, Quaternion.identity);
     }
 }
