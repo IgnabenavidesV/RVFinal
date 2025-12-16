@@ -298,8 +298,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7632033528658864273}
-  - component: {fileID: 7178436183217141065}
   - component: {fileID: 5609074695794198332}
+  - component: {fileID: 709276444082809939}
   m_Layer: 0
   m_Name: IceTower
   m_TagString: Tower
@@ -325,25 +325,6 @@ Transform:
   - {fileID: 2193095944652936251}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7178436183217141065
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7848168743287034367}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0f8ff367fc27af44a08d3f923cd146f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ArrowTower
-  range: 15
-  fireRate: 1
-  rotationSpeed: 5
-  head: {fileID: 3065115415342555119}
-  shootPoint: {fileID: 4172833135132241685}
-  arrowPrefab: {fileID: 7249382915568071819, guid: d092f6ae12097c54ba295f8290e964c4, type: 3}
-  shootAudioClip: {fileID: 8300000, guid: c288bde7ea441594e94f338c0dc1cb8b, type: 3}
 --- !u!54 &5609074695794198332
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -371,6 +352,25 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &709276444082809939
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7848168743287034367}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8756dc0afbe1cd44bb98d81fa91c7b5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IceTower
+  range: 8
+  fireRate: 1
+  rotationSpeed: 5
+  head: {fileID: 3065115415342555119}
+  shootPoint: {fileID: 4172833135132241685}
+  iceProjectilePrefab: {fileID: 7249382915568071819, guid: d092f6ae12097c54ba295f8290e964c4, type: 3}
+  shootAudioClip: {fileID: 8300000, guid: c288bde7ea441594e94f338c0dc1cb8b, type: 3}
 --- !u!1001 &89118940291943003
 PrefabInstance:
   m_ObjectHideFlags: 0

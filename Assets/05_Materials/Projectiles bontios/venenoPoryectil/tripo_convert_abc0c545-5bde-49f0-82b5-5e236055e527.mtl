@@ -1,0 +1,16 @@
+# Blender 4.5.0 MTL File: 'None'
+# www.blender.org
+
+newmtl tripo_mat_abc0c545-5bde-49f0-82b5-5e236055e527
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd tripo_node_d009b23f-e9ab-4c19-9e15-357734e3e58e_BaseColor.jpg
+map_Ns fantasymagicorb3dmodel_roughness.JPEG
+map_Pr fantasymagicorb3dmodel_roughness.JPEG
+map_refl fantasymagicorb3dmodel_metallic.JPEG
+map_Pm fantasymagicorb3dmodel_metallic.JPEG
+map_Bump -bm 1.000000 tripo_node_d009b23f-e9ab-4c19-9e15-357734e3e58e_Normal_Bake.jpg
