@@ -5,6 +5,8 @@ public class Projectile : MonoBehaviour
     public float speed = 30f;
     public float damage = 10f;
     public float lifeTime = 5f;
+    public enum FireAxis { ForwardZ, RightX, UpY }
+    public FireAxis axis = FireAxis.RightX;
 
     private void Start()
     {
@@ -13,7 +15,16 @@ public class Projectile : MonoBehaviour
 
     private void Update()
     {
-        transform.position += transform.forward * speed * Time.deltaTime;
+        Vector3 dir = axis switch
+        {
+            FireAxis.RightX => transform.right,
+            FireAxis.UpY => transform.up,
+            _ => transform.forward
+        };
+
+        transform.position += dir * speed * Time.deltaTime;
+
+
     }
 
     private void OnTriggerEnter(Collider other)
