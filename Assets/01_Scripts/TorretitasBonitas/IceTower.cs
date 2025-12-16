@@ -3,12 +3,14 @@ using System.Linq;
 
 public class IceTower : MonoBehaviour
 {
+    [Header("Tower Stats")]
     public float range = 8f;
     public float fireRate = 1f;
     public float rotationSpeed = 5f;
 
-    public Transform head;
-    public Transform shootPoint;
+    [Header("References")]
+    public Transform head;          // Parte superior que rota horizontalmente
+    public Transform shootPoint;    // Punto de disparo
     public GameObject iceProjectilePrefab;
 
     [Header("Audio")]
@@ -20,7 +22,6 @@ public class IceTower : MonoBehaviour
 
     void Awake()
     {
-        // Detecta automáticamente o crea AudioSource
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
             audioSource = gameObject.AddComponent<AudioSource>();
@@ -34,7 +35,8 @@ public class IceTower : MonoBehaviour
 
         if (currentTarget != null)
         {
-            RotateToTarget();
+            RotateHead();
+            AimShootPoint();
 
             if (fireTimer <= 0f)
             {
@@ -48,32 +50,40 @@ public class IceTower : MonoBehaviour
     {
         var enemies = GameObject.FindGameObjectsWithTag("Enemy");
 
-        var closest = enemies
+        currentTarget = enemies
             .Where(e => Vector3.Distance(transform.position, e.transform.position) <= range)
             .OrderBy(e => Vector3.Distance(transform.position, e.transform.position))
+            .Select(e => e.transform)
             .FirstOrDefault();
-
-        currentTarget = closest != null ? closest.transform : null;
     }
 
-    void RotateToTarget()
+    void RotateHead()
     {
+        // Solo rotación horizontal
         Vector3 dir = currentTarget.position - head.position;
-        Quaternion lookRot = Quaternion.LookRotation(dir);
-        head.rotation = Quaternion.Lerp(head.rotation, lookRot, rotationSpeed * Time.deltaTime);
+        dir.y = 0;
 
+        if (dir.sqrMagnitude > 0.001f)
+        {
+            Quaternion targetRot = Quaternion.LookRotation(dir);
+            head.rotation = Quaternion.Lerp(head.rotation, targetRot, rotationSpeed * Time.deltaTime);
+        }
+    }
+
+    void AimShootPoint()
+    {
+        // Apunta directamente al enemigo (incluyendo altura)
         if (shootPoint != null)
-            shootPoint.rotation = lookRot;
+            shootPoint.LookAt(currentTarget.position);
     }
 
     void Shoot()
     {
-        // Disparo
         GameObject go = Instantiate(iceProjectilePrefab, shootPoint.position, shootPoint.rotation);
         var p = go.GetComponent<IceProjectile>();
-        p.SetTarget(currentTarget);
+        if (p != null)
+            p.SetTarget(currentTarget);
 
-        // Audio
         if (shootClip != null)
             audioSource.PlayOneShot(shootClip);
     }

@@ -103,8 +103,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f326d268829ce54ebc2b12fe00fcda7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Balloon
-  health: 30
+  health: 50
   speed: 2
+  moneyReward: 50
   path: []
   waveManager: {fileID: 0}
 --- !u!54 &5148550027757438736

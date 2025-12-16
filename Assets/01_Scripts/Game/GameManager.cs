@@ -123,4 +123,9 @@ public class GameManager : MonoBehaviour
         }
         return false; // No hay suficiente dinero
     }
+    public bool TryBuy(int cost)
+    {
+        return SpendMoney(cost);
+    }
+
 }
