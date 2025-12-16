@@ -369,7 +369,7 @@ MonoBehaviour:
   rotationSpeed: 5
   head: {fileID: 3065115415342555119}
   shootPoint: {fileID: 4172833135132241685}
-  iceProjectilePrefab: {fileID: 7249382915568071819, guid: d092f6ae12097c54ba295f8290e964c4, type: 3}
+  iceProjectilePrefab: {fileID: 2029822879806288538, guid: 9d44393625f876040956a57111fe040d, type: 3}
   shootAudioClip: {fileID: 8300000, guid: c288bde7ea441594e94f338c0dc1cb8b, type: 3}
 --- !u!1001 &89118940291943003
 PrefabInstance:

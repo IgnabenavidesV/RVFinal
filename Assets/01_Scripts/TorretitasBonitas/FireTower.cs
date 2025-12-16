@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Linq;
+using System.Collections.Generic;
 
 public class FireTower : MonoBehaviour
 {
@@ -9,19 +10,16 @@ public class FireTower : MonoBehaviour
     public Transform head;
     public Transform shootPoint;
     public GameObject fireProjectilePrefab;
-    public AudioClip shootAudioClip; // Audio al disparar
+    public AudioClip shootAudioClip;
     private AudioSource audioSource;
 
     private float cooldown = 0f;
-    private Balloon target;
+    private MonoBehaviour currentTarget; // Balloon o Enemy
 
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
+        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
     }
 
     void Update()
@@ -30,7 +28,7 @@ public class FireTower : MonoBehaviour
 
         FindTarget();
 
-        if (target != null)
+        if (currentTarget != null)
         {
             RotateTowardsTarget();
 
@@ -46,16 +44,16 @@ public class FireTower : MonoBehaviour
     {
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
 
-        target = enemies
-            .Select(e => e.GetComponent<Balloon>())
-            .Where(b => b != null && Vector3.Distance(transform.position, b.transform.position) <= range)
-            .OrderBy(b => Vector3.Distance(transform.position, b.transform.position))
+        currentTarget = enemies
+            .Select(e => e.GetComponent<Balloon>() as MonoBehaviour ?? e.GetComponent<Enemy>())
+            .Where(e => e != null && Vector3.Distance(transform.position, e.transform.position) <= range)
+            .OrderBy(e => Vector3.Distance(transform.position, e.transform.position))
             .FirstOrDefault();
     }
 
     void RotateTowardsTarget()
     {
-        Vector3 dir = target.transform.position - head.position;
+        Vector3 dir = currentTarget.transform.position - head.position;
         Quaternion rot = Quaternion.LookRotation(dir);
         head.rotation = Quaternion.Lerp(head.rotation, rot, Time.deltaTime * 5f);
 
@@ -67,9 +65,29 @@ public class FireTower : MonoBehaviour
     {
         GameObject proj = Instantiate(fireProjectilePrefab, shootPoint.position, shootPoint.rotation);
         FireProjectile p = proj.GetComponent<FireProjectile>();
-        p.SetTarget(target.transform);
+        p.SetTarget(currentTarget.transform);
+
+        ApplyEffects(currentTarget);
 
         if (shootAudioClip != null)
             audioSource.PlayOneShot(shootAudioClip);
+    }
+
+    void ApplyEffects(MonoBehaviour enemy)
+    {
+        Balloon b = enemy.GetComponent<Balloon>();
+        if (b != null)
+        {
+            b.TakeDamage(10);
+            b.ApplyBurn(2f, 2f);
+            return;
+        }
+
+        Enemy e = enemy.GetComponent<Enemy>();
+        if (e != null)
+        {
+            e.TakeDamage(10);
+            e.ApplyBurn(2f, 2f);
+        }
     }
 }
