@@ -301,7 +301,7 @@ GameObject:
   - component: {fileID: 6186088609610709937}
   m_Layer: 0
   m_Name: TorretaFlechas
-  m_TagString: Untagged
+  m_TagString: Tower
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -336,7 +336,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0f8ff367fc27af44a08d3f923cd146f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArrowTower
-  range: 8
+  range: 15
   fireRate: 1
   rotationSpeed: 5
   head: {fileID: 3065115415342555119}

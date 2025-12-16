@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 7147362965741817216}
   - component: {fileID: 6483748015986527774}
   - component: {fileID: 4402075747003544702}
-  - component: {fileID: 1748999225439447343}
   - component: {fileID: 8022089058374305582}
+  - component: {fileID: 375513056458810590}
   m_Layer: 0
   m_Name: Dirigible3
   m_TagString: Enemy
@@ -114,21 +114,6 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &1748999225439447343
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2065766182191957436}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe5ebc03accf3c345ae8d51f112c1527, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  maxHealth: 70
-  damageToPlayer: 10
-  moveSpeed: 4
 --- !u!114 &8022089058374305582
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -145,6 +130,25 @@ MonoBehaviour:
   spawnPoint: {fileID: 8686880583172267093}
   spawnInterval: 1
   maxBalloonsToSpawn: 2
+--- !u!114 &375513056458810590
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2065766182191957436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35ea31fc6c69f7d4aaa3c4795b5f2004, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BlimpEnemy
+  speed: 2
+  waypoints: []
+  detectionRange: 10
+  fireRate: 1
+  damage: 10
+  bulletPrefab: {fileID: 2552871303111195465, guid: e4b9044d82ac4ea49bf081c40fa29699, type: 3}
+  shootPoint: {fileID: 8686880583172267093}
 --- !u!1 &6741495284211911089
 GameObject:
   m_ObjectHideFlags: 0
