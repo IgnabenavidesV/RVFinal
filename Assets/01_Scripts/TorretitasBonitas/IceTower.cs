@@ -59,9 +59,12 @@ public class IceTower : MonoBehaviour
 
     void RotateHead()
     {
-        // Solo rotación horizontal
+        if (currentTarget == null || head == null)
+            return;
+
+        // Dirección hacia el enemigo (solo horizontal)
         Vector3 dir = currentTarget.position - head.position;
-        dir.y = 0;
+        dir.y = 0; // Mantener solo rotación horizontal
 
         if (dir.sqrMagnitude > 0.001f)
         {
@@ -70,21 +73,27 @@ public class IceTower : MonoBehaviour
         }
     }
 
-    void AimShootPoint()
-    {
-        // Apunta directamente al enemigo (incluyendo altura)
-        if (shootPoint != null)
-            shootPoint.LookAt(currentTarget.position);
-    }
 
-    void Shoot()
+void AimShootPoint()
+{
+    if (shootPoint != null && currentTarget != null)
     {
-        GameObject go = Instantiate(iceProjectilePrefab, shootPoint.position, shootPoint.rotation);
-        var p = go.GetComponent<IceProjectile>();
-        if (p != null)
-            p.SetTarget(currentTarget);
-
-        if (shootClip != null)
-            audioSource.PlayOneShot(shootClip);
+        // Apunta al enemigo incluyendo altura
+        shootPoint.LookAt(currentTarget.position);
     }
+}
+
+void Shoot()
+{
+    if (iceProjectilePrefab == null || shootPoint == null)
+        return;
+
+    GameObject go = Instantiate(iceProjectilePrefab, shootPoint.position, shootPoint.rotation);
+    var p = go.GetComponent<IceProjectile>();
+    if (p != null)
+        p.SetTarget(currentTarget);
+
+    if (shootClip != null)
+        audioSource.PlayOneShot(shootClip);
+}
 }
