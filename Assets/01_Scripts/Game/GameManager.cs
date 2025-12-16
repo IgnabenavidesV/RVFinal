@@ -1,6 +1,6 @@
 using UnityEngine;
 using System;
-
+using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
@@ -38,9 +38,11 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         currentLives = maxLives;
+        currentWave = 1;
         OnLivesChanged?.Invoke(currentLives);
         OnWaveChanged?.Invoke(currentWave);
     }
+
 
     // -------------------------------------------------------
     // Daño al jugador
@@ -59,7 +61,10 @@ public class GameManager : MonoBehaviour
     void TriggerGameOver()
     {
         OnGameOver?.Invoke();
-        Time.timeScale = 0f;
+
+        // Reiniciar el juego
+        Time.timeScale = 1f; // Asegurarse de que el tiempo no esté pausado
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     // -------------------------------------------------------

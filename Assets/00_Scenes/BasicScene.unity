@@ -29134,7 +29134,7 @@ MonoBehaviour:
   spawner: {fileID: 1846889979}
   currentWave: 2
   baseEnemiesPerWave: 5
-  spawnInterval: 0.5
+  spawnInterval: 1
   speedPerWave: 0.08
   lifePerWave: 0.15
 --- !u!4 &2084775161

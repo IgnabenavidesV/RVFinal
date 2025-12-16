@@ -5,11 +5,12 @@ public class WaveManager : MonoBehaviour
 {
     [Header("Spawner")]
     public EnemySpawner spawner;
+    private bool bossSpawned = false;
 
     [Header("Wave Settings")]
     public int currentWave = 1;
     public int baseEnemiesPerWave = 5;
-    public float spawnInterval = 0.5f; // tiempo entre spawn de cada enemigo
+    public float spawnInterval = 0.5f;
 
     [Header("Difficulty Scaling")]
     public float speedPerWave = 0.08f;
@@ -32,9 +33,7 @@ public class WaveManager : MonoBehaviour
         {
             waypoints = new Transform[wpParent.transform.childCount];
             for (int i = 0; i < wpParent.transform.childCount; i++)
-            {
                 waypoints[i] = wpParent.transform.GetChild(i);
-            }
         }
 
         StartCoroutine(RunWave());
@@ -42,6 +41,7 @@ public class WaveManager : MonoBehaviour
 
     private IEnumerator RunWave()
     {
+        bossSpawned = false; // reiniciar para la nueva wave
         int enemiesToSpawn = baseEnemiesPerWave + Mathf.RoundToInt(currentWave * 2f);
 
         for (int i = 0; i < enemiesToSpawn; i++)
@@ -50,10 +50,13 @@ public class WaveManager : MonoBehaviour
             yield return new WaitForSeconds(spawnInterval);
         }
 
-        // Esperar hasta que todos los enemigos estén muertos o hayan llegado a meta
+        // Esperar a que todos los enemigos mueran o lleguen a meta
         yield return new WaitUntil(() => enemiesAlive <= 0);
 
-        // 1 segundo de pausa y siguiente wave
+        // Reiniciar música si hubo boss
+        if (bossSpawned)
+            AudioManager.Instance.PlayBackgroundMusic();
+
         yield return new WaitForSeconds(1f);
 
         currentWave++;
@@ -62,8 +65,15 @@ public class WaveManager : MonoBehaviour
 
     private void SpawnEnemy()
     {
-        GameObject enemyGO = spawner.SpawnEnemyByWave(currentWave);
+        GameObject enemyGO = spawner.SpawnEnemyByWave(currentWave, bossSpawned);
         if (enemyGO == null) return;
+
+        // Detectar boss por tag
+        if (enemyGO.CompareTag("Boss"))
+        {
+            bossSpawned = true;
+            AudioManager.Instance.PlayBossMusic();
+        }
 
         enemiesAlive++;
 
@@ -91,6 +101,7 @@ public class WaveManager : MonoBehaviour
 
         Debug.LogWarning($"Prefab {enemyGO.name} no tiene Balloon ni Enemy.");
     }
+
 
     public void OnEnemyKilled()
     {
