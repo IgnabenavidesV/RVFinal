@@ -1,33 +1,30 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 public class WaveManager : MonoBehaviour
 {
     [Header("Spawner")]
     public EnemySpawner spawner;
-    private bool bossSpawned = false;
 
-    [Header("Wave Settings")]
-    public int currentWave = 1;
-    public int baseEnemiesPerWave = 5;
+    [Header("Cantidad de enemigos por wave (AQUÍ controlas)")]
+    public int enemiesPerWave = 6;
+
+    [Header("Timing")]
     public float spawnInterval = 0.5f;
 
-    [Header("Difficulty Scaling")]
+    [Header("Escalado por wave")]
     public float speedPerWave = 0.08f;
-    public float lifePerWave = 0.15f;
+    public float healthPerWave = 0.15f;
+
+    public int currentWave = 1;
 
     private int enemiesAlive = 0;
     private Transform[] waypoints;
+    private bool bossSpawned = false;
 
     void Start()
     {
-        if (spawner == null)
-        {
-            Debug.LogError("WaveManager: EnemySpawner no asignado.");
-            return;
-        }
-
-        // Obtener waypoints
+        // Waypoints
         GameObject wpParent = GameObject.Find("Waypoints");
         if (wpParent != null)
         {
@@ -41,67 +38,58 @@ public class WaveManager : MonoBehaviour
 
     private IEnumerator RunWave()
     {
-        bossSpawned = false; // reiniciar para la nueva wave
-        int enemiesToSpawn = baseEnemiesPerWave + Mathf.RoundToInt(currentWave * 2f);
+        bossSpawned = false;
 
-        for (int i = 0; i < enemiesToSpawn; i++)
+        for (int i = 0; i < enemiesPerWave; i++)
         {
             SpawnEnemy();
             yield return new WaitForSeconds(spawnInterval);
         }
 
-        // Esperar a que todos los enemigos mueran o lleguen a meta
         yield return new WaitUntil(() => enemiesAlive <= 0);
 
-        // Reiniciar m�sica si hubo boss
-        if (bossSpawned)
-            AudioManager.Instance.PlayBackgroundMusic();
-
-        yield return new WaitForSeconds(1f);
-
         currentWave++;
+        yield return new WaitForSeconds(1f);
         StartCoroutine(RunWave());
     }
 
     private void SpawnEnemy()
     {
-        GameObject enemyGO = spawner.SpawnEnemyByWave(currentWave, bossSpawned);
+        var enemyGO = spawner.SpawnEnemyByWave(currentWave, bossSpawned);
         if (enemyGO == null) return;
-
-        // Detectar boss por tag
-        if (enemyGO.CompareTag("Boss"))
-        {
-            bossSpawned = true;
-            AudioManager.Instance.PlayBossMusic();
-        }
 
         enemiesAlive++;
 
-        // --- Balloon ---
-        Balloon balloon = enemyGO.GetComponent<Balloon>();
-        if (balloon != null)
+        // Boss
+        var boss = enemyGO.GetComponent<Balloon>();
+        if (boss != null)
         {
-            float waveFactor = currentWave - 1;
-            balloon.speed *= 1f + (speedPerWave * waveFactor);
-            balloon.life = Mathf.RoundToInt(balloon.life * (1f + (lifePerWave * waveFactor)));
+            bossSpawned = true;
 
-            if (waypoints != null) balloon.path = waypoints;
-            balloon.waveManager = this;
+            float waveFactor = currentWave - 1;
+            boss.speed *= 1f + (speedPerWave * waveFactor);
+            boss.health = Mathf.RoundToInt(boss.health * (1f + (healthPerWave * waveFactor)));
+
+            if (waypoints != null) boss.path = waypoints;
+            boss.waveManager = this;
             return;
         }
 
-        // --- Enemy ---
-        Enemy enemy = enemyGO.GetComponent<Enemy>();
+        // Enemy normal
+        var enemy = enemyGO.GetComponent<Enemy>();
         if (enemy != null)
         {
+            float waveFactor = currentWave - 1;
+            enemy.moveSpeed *= 1f + (speedPerWave * waveFactor);
+            enemy.health = Mathf.RoundToInt(enemy.health * (1f + (healthPerWave * waveFactor)));
+
             if (waypoints != null) enemy.SetPath(waypoints);
             enemy.waveManager = this;
             return;
         }
 
-        Debug.LogWarning($"Prefab {enemyGO.name} no tiene Balloon ni Enemy.");
+        Debug.LogWarning($"Prefab {enemyGO.name} no tiene Enemy ni Balloon.");
     }
-
 
     public void OnEnemyKilled()
     {

@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Linq;
-using System.Collections.Generic;
 
 public class IceTower : MonoBehaviour
 {
@@ -11,17 +10,9 @@ public class IceTower : MonoBehaviour
     public Transform head;
     public Transform shootPoint;
     public GameObject iceProjectilePrefab;
-    public AudioClip shootAudioClip;
-    private AudioSource audioSource;
 
     private float fireTimer = 0f;
-    private MonoBehaviour currentTarget;
-
-    void Start()
-    {
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
-    }
+    private Transform currentTarget;
 
     void Update()
     {
@@ -43,20 +34,20 @@ public class IceTower : MonoBehaviour
 
     void FindTarget()
     {
-        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        var enemies = GameObject.FindGameObjectsWithTag("Enemy");
 
-        currentTarget = enemies
-            .Select(e => e.GetComponent<Balloon>() as MonoBehaviour ?? e.GetComponent<Enemy>())
-            .Where(e => e != null && Vector3.Distance(transform.position, e.transform.position) <= range)
+        var closest = enemies
+            .Where(e => Vector3.Distance(transform.position, e.transform.position) <= range)
             .OrderBy(e => Vector3.Distance(transform.position, e.transform.position))
             .FirstOrDefault();
+
+        currentTarget = closest != null ? closest.transform : null;
     }
 
     void RotateToTarget()
     {
-        Vector3 dir = currentTarget.transform.position - head.position;
+        Vector3 dir = currentTarget.position - head.position;
         Quaternion lookRot = Quaternion.LookRotation(dir);
-
         head.rotation = Quaternion.Lerp(head.rotation, lookRot, rotationSpeed * Time.deltaTime);
 
         if (shootPoint != null)
@@ -66,30 +57,7 @@ public class IceTower : MonoBehaviour
     void Shoot()
     {
         GameObject go = Instantiate(iceProjectilePrefab, shootPoint.position, shootPoint.rotation);
-        IceProjectile p = go.GetComponent<IceProjectile>();
-        p.SetTarget(currentTarget.transform);
-
-        ApplyEffects(currentTarget);
-
-        if (shootAudioClip != null)
-            audioSource.PlayOneShot(shootAudioClip);
-    }
-
-    void ApplyEffects(MonoBehaviour enemy)
-    {
-        Balloon b = enemy.GetComponent<Balloon>();
-        if (b != null)
-        {
-            b.TakeDamage(5);
-            b.ApplySlow(0.5f, 2f);
-            return;
-        }
-
-        Enemy e = enemy.GetComponent<Enemy>();
-        if (e != null)
-        {
-            e.TakeDamage(5);
-            e.ApplySlow(0.5f, 2f);
-        }
+        var p = go.GetComponent<IceProjectile>();
+        p.SetTarget(currentTarget);
     }
 }

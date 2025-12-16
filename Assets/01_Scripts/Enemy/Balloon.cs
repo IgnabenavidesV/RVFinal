@@ -1,85 +1,69 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
+using UnityEngine;
 
 public class Balloon : MonoBehaviour
 {
+    [Header("Boss Stats (Inspector manda)")]
+    [Min(1)] public int health = 30;
     public float speed = 1.5f;
-    public int life = 1;
 
     [HideInInspector] public Transform[] path;
-    private int currentPoint = 0;
-
-    public float floatAmplitude = 0.02f;
-    public float floatFrequency = 1f;
-    public float rotationSpeed = 20f;
-
-    private Vector3 startPos;
-
     [HideInInspector] public WaveManager waveManager;
 
-    // --- SISTEMA DE SLOW ---
+    private int currentPoint = 0;
+
+    // efectos
     private float originalSpeed;
     private float slowTimer = 0f;
     private bool isStunned = false;
     private bool isBurning = false;
     private bool isPoisoned = false;
 
-    void Start()
+    private void Awake()
     {
         originalSpeed = speed;
-        startPos = transform.position;
 
-        Transform wp = GameObject.Find("Waypoints").transform;
-
-        path = new Transform[wp.childCount];
-        for (int i = 0; i < wp.childCount; i++)
-        {
-            path[i] = wp.GetChild(i);
-        }
+        // si quieres que la torre lo encuentre por tag:
+        gameObject.tag = "Enemy";
+        // y si quieres distinguirlo:
+        // gameObject.tag = "Boss";  (pero entonces tu torre debe buscar Boss también)
     }
 
     void Update()
     {
-        // Contador del slow
-        if (slowTimer > 0)
+        if (slowTimer > 0f)
         {
             slowTimer -= Time.deltaTime;
-            if (slowTimer <= 0)
-            {
-                speed = originalSpeed; // Se recupera
-            }
+            if (slowTimer <= 0f) speed = originalSpeed;
         }
 
         if (path == null || path.Length == 0) return;
 
         Transform target = path[currentPoint];
 
-        // Movimiento base
-        transform.position = Vector3.MoveTowards(
-            transform.position,
-            target.position,
-            speed * Time.deltaTime
-        );
+        if (!isStunned)
+            transform.position = Vector3.MoveTowards(transform.position, target.position, speed * Time.deltaTime);
 
-        // Flotación
-        float yOffset = Mathf.Sin(Time.time * floatFrequency) * floatAmplitude;
-        transform.position = new Vector3(transform.position.x, transform.position.y + yOffset, transform.position.z);
-
-        // Rotación
-        transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime, Space.World);
-
-        // Llegó al waypoint
         if (Vector3.Distance(transform.position, target.position) < 0.1f)
         {
             currentPoint++;
-
             if (currentPoint >= path.Length)
             {
-                if (waveManager != null)
-                    waveManager.OnEnemyKilled();
-
+                waveManager?.OnEnemyKilled();
                 Destroy(gameObject);
             }
+        }
+    }
+
+    public void TakeDamage(int dmg)
+    {
+        health -= dmg;
+        Debug.Log($"[Boss] {name} HIT dmg={dmg} hp={health}");
+
+        if (health <= 0)
+        {
+            waveManager?.OnEnemyKilled();
+            Destroy(gameObject);
         }
     }
 
@@ -88,6 +72,7 @@ public class Balloon : MonoBehaviour
         speed = originalSpeed * (1f - percent);
         slowTimer = duration;
     }
+
     public void ApplyStun(float duration)
     {
         if (isStunned) return;
@@ -97,14 +82,10 @@ public class Balloon : MonoBehaviour
     private IEnumerator StunRoutine(float duration)
     {
         isStunned = true;
-        float originalSpeed = speed;
-        speed = 0;   // Detener movimiento
-
         yield return new WaitForSeconds(duration);
-
-        speed = originalSpeed;
         isStunned = false;
     }
+
     public void ApplyBurn(float duration, float dps)
     {
         if (isBurning) return;
@@ -114,31 +95,30 @@ public class Balloon : MonoBehaviour
     private IEnumerator BurnRoutine(float duration, float dps)
     {
         isBurning = true;
-
         float timer = 0f;
-        float tick = 0.5f;   // daño cada medio segundo
+        float tick = 0.5f;
 
         while (timer < duration)
         {
-            TakeDamage(Mathf.RoundToInt(dps * tick)); // daño proporcional
+            TakeDamage(Mathf.RoundToInt(dps * tick));
             timer += tick;
             yield return new WaitForSeconds(tick);
         }
 
         isBurning = false;
     }
+
     public void ApplyPoison(float duration, float dps)
     {
-        // Si ya está envenenado, reinicia el veneno
+        if (isPoisoned) StopCoroutine(nameof(PoisonRoutine));
         StartCoroutine(PoisonRoutine(duration, dps));
     }
 
     private IEnumerator PoisonRoutine(float duration, float dps)
     {
         isPoisoned = true;
-
         float timer = 0f;
-        float tick = 1f; // daño cada segundo
+        float tick = 1f;
 
         while (timer < duration)
         {
@@ -149,21 +129,4 @@ public class Balloon : MonoBehaviour
 
         isPoisoned = false;
     }
-    public void TakeDamage(int dmg)
-    {
-        life -= dmg;
-        if (life <= 0)
-        {
-            if (waveManager != null)
-                waveManager.OnEnemyKilled();
-
-            Destroy(gameObject);
-        }
-    }
-    public interface IDamageableStunnable
-    {
-        void TakeDamage(int amount);
-        void ApplyStun(float duration);
-    }
-
 }

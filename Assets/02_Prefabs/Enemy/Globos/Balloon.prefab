@@ -125,7 +125,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe5ebc03accf3c345ae8d51f112c1527, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  maxHealth: 5
+  maxHealth: 1
   damageToPlayer: 1
   moveSpeed: 1
   path: []
@@ -136,6 +136,7 @@ MonoBehaviour:
   rotationSpeed: 20
   deathClip: {fileID: 8300000, guid: d7a753239d4a2b849abc80b2f61bad85, type: 3}
   reachGoalClip: {fileID: 8300000, guid: 5f02f5559dae7b045acd0425a4af8cc5, type: 3}
+  waveManager: {fileID: 0}
 --- !u!1001 &4167295263544106770
 PrefabInstance:
   m_ObjectHideFlags: 0
