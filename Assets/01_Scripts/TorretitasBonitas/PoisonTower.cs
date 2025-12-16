@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Linq;
 
 public class PoisonTower : MonoBehaviour
@@ -7,6 +7,12 @@ public class PoisonTower : MonoBehaviour
     public float range = 8f;
     public float fireRate = 1.2f;
     public float rotationSpeed = 5f;
+
+    [Header("Poison Damage (Inspector de la TORRE)")]
+    public int impactDamage = 2;
+    public float poisonDuration = 6f;
+    public float poisonDPS = 1.5f;
+    public float explosionRadius = 0f;
 
     [Header("References")]
     public Transform head;
@@ -30,7 +36,6 @@ public class PoisonTower : MonoBehaviour
     void Update()
     {
         fireTimer -= Time.deltaTime;
-
         FindTarget();
 
         if (currentTarget != null)
@@ -49,7 +54,6 @@ public class PoisonTower : MonoBehaviour
     void FindTarget()
     {
         var enemies = GameObject.FindGameObjectsWithTag("Enemy");
-
         currentTarget = enemies
             .Where(e => Vector3.Distance(transform.position, e.transform.position) <= range)
             .OrderBy(e => Vector3.Distance(transform.position, e.transform.position))
@@ -59,11 +63,10 @@ public class PoisonTower : MonoBehaviour
 
     void RotateHead()
     {
-        if (currentTarget == null || head == null)
-            return;
+        if (currentTarget == null || head == null) return;
 
         Vector3 dir = currentTarget.position - head.position;
-        dir.y = 0; // solo horizontal
+        dir.y = 0;
 
         if (dir.sqrMagnitude > 0.001f)
         {
@@ -75,7 +78,7 @@ public class PoisonTower : MonoBehaviour
     void AimShootPoint()
     {
         if (shootPoint != null && currentTarget != null)
-            shootPoint.LookAt(currentTarget.position); // apuntar al objetivo
+            shootPoint.LookAt(currentTarget.position);
     }
 
     void Shoot()
@@ -86,9 +89,12 @@ public class PoisonTower : MonoBehaviour
 
         PoisonProjectile p = proj.GetComponent<PoisonProjectile>();
         if (p != null)
+        {
             p.SetTarget(currentTarget);
+            // ✅ Sobrescribe desde el Inspector de la torre
+            p.Configure(impactDamage, poisonDuration, poisonDPS, explosionRadius);
+        }
 
-        if (shootClip != null)
-            audioSource.PlayOneShot(shootClip);
+        if (shootClip != null) audioSource.PlayOneShot(shootClip);
     }
 }
