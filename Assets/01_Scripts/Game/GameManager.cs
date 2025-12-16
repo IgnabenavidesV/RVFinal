@@ -1,6 +1,7 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
@@ -18,16 +19,18 @@ public class GameManager : MonoBehaviour
     public float strategyTime = 5f;
     private float strategyTimer = 0f;
 
-    [Header("Economía")]
-    public int money = 0; // Dinero actual del jugador
+    [Header("EconomÃ­a")]
+    public int money = 0;
 
-    // === EVENTOS PARA UIManager ===
+    [Header("UI")]
+    public TMP_Text moneyText;
+
+    // === EVENTOS (para otras UI si quieres) ===
     public event Action<int> OnLivesChanged;
     public event Action<int> OnWaveChanged;
     public event Action<bool> OnStrategyPhaseChanged;
     public event Action<float> OnStrategyTimeTick;
     public event Action OnGameOver;
-    public event Action<int> OnMoneyChanged; // Evento para UI del dinero
 
     void Awake()
     {
@@ -44,13 +47,15 @@ public class GameManager : MonoBehaviour
     {
         currentLives = maxLives;
         currentWave = 1;
+
         OnLivesChanged?.Invoke(currentLives);
         OnWaveChanged?.Invoke(currentWave);
-        OnMoneyChanged?.Invoke(money);
+
+        UpdateMoneyText();
     }
 
     // -------------------------------------------------------
-    // Daño al jugador
+    // DaÃ±o al jugador
     // -------------------------------------------------------
     public void TakeDamage(int amount = 1)
     {
@@ -67,7 +72,7 @@ public class GameManager : MonoBehaviour
     {
         OnGameOver?.Invoke();
         Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        SceneManager.LoadScene("MainMenu");
     }
 
     // -------------------------------------------------------
@@ -105,12 +110,12 @@ public class GameManager : MonoBehaviour
     }
 
     // -------------------------------------------------------
-    // Manejo de dinero
+    // Dinero
     // -------------------------------------------------------
     public void AddMoney(int amount)
     {
         money += amount;
-        OnMoneyChanged?.Invoke(money);
+        UpdateMoneyText();
     }
 
     public bool SpendMoney(int amount)
@@ -118,14 +123,22 @@ public class GameManager : MonoBehaviour
         if (money >= amount)
         {
             money -= amount;
-            OnMoneyChanged?.Invoke(money);
+            UpdateMoneyText();
             return true;
         }
-        return false; // No hay suficiente dinero
+        return false;
     }
+
     public bool TryBuy(int cost)
     {
         return SpendMoney(cost);
     }
 
+    void UpdateMoneyText()
+    {
+        if (moneyText != null)
+            moneyText.text = money.ToString() + "$";
+        // Ejemplo alternativo:
+        // moneyText.text = $"Gold: {money}";
+    }
 }

@@ -190,11 +190,18 @@ public class Enemy : MonoBehaviour
         if (isDead) return;
         isDead = true;
 
+        // ✅ DAÑO AL PLAYER
+        if (GameManager.Instance != null)
+            GameManager.Instance.TakeDamage(damageToPlayer);
+
         waveManager?.OnEnemyKilled();
 
-        if (reachGoalClip != null) audioSource.PlayOneShot(reachGoalClip);
+        if (reachGoalClip != null)
+            audioSource.PlayOneShot(reachGoalClip);
+
         Destroy(gameObject, reachGoalClip != null ? reachGoalClip.length : 0f);
     }
+
 
     public void SetPath(Transform[] waypoints)
     {
