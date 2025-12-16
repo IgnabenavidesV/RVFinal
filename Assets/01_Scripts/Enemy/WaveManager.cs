@@ -8,25 +8,46 @@ public class WaveManager : MonoBehaviour
 
     [Header("Wave Settings")]
     public int currentWave = 1;
-    public int enemiesPerWave = 5;
-    public float spawnInterval = 1.5f;
-    public float strategyTime = 5f;
+    public int baseEnemiesPerWave = 5;
+    public float baseSpawnInterval = 1.5f;
+    public float baseStrategyTime = 5f;
 
-    private int enemiesSpawned = 0;
+    [Header("Difficulty Scaling")]
+    public float enemiesIncreasePerWave = 2f;
+    public float spawnIntervalReduction = 0.07f;
+    public float strategyReduction = 0.3f;
+    public float speedPerWave = 0.08f;
+    public float lifePerWave = 0.15f;
+
+    [Header("Limits")]
+    public float minSpawnInterval = 0.3f;
+    public float minStrategyTime = 1f;
+
     private int enemiesAlive = 0;
 
-    [Header("Dificultad")]
-    public float enemySpeedMultiplier = 0.10f;  // 10% por oleada
-    public float enemyLifeMultiplier = 0.20f;   // 20% por oleada
-    public float spawnRateMultiplier = 0.05f;   // reduce 0.05 segundos por oleada
-    public float strategyReductionPerWave = 0.2f;
+    private Transform[] waypoints;
 
     void Start()
     {
         if (spawner == null)
         {
-            Debug.LogError("WaveManager: No se asignó el EnemySpawner.");
+            Debug.LogError("WaveManager: EnemySpawner no asignado.");
             return;
+        }
+
+        // Obtener waypoints una sola vez
+        var wpParent = GameObject.Find("Waypoints");
+        if (wpParent != null)
+        {
+            waypoints = new Transform[wpParent.transform.childCount];
+            for (int i = 0; i < wpParent.transform.childCount; i++)
+            {
+                waypoints[i] = wpParent.transform.GetChild(i);
+            }
+        }
+        else
+        {
+            Debug.LogError("WaveManager: No se encontró GameObject 'Waypoints'.");
         }
 
         StartCoroutine(RunWave());
@@ -34,59 +55,68 @@ public class WaveManager : MonoBehaviour
 
     IEnumerator RunWave()
     {
-        enemiesSpawned = 0;
         enemiesAlive = 0;
 
-        // SPAWN DE ENEMIGOS
-        while (enemiesSpawned < enemiesPerWave)
+        int enemiesToSpawn = baseEnemiesPerWave + Mathf.RoundToInt(currentWave * enemiesIncreasePerWave);
+
+        float spawnInterval = Mathf.Max(minSpawnInterval, baseSpawnInterval - currentWave * spawnIntervalReduction);
+        float strategyTime = Mathf.Max(minStrategyTime, baseStrategyTime - currentWave * strategyReduction);
+
+        for (int i = 0; i < enemiesToSpawn; i++)
         {
             SpawnEnemy();
-            enemiesSpawned++;
             yield return new WaitForSeconds(spawnInterval);
         }
 
-        // ESPERAR A QUE MUERAN TODOS
         yield return new WaitUntil(() => enemiesAlive <= 0);
-
-        // TIEMPO EXTRA
         yield return new WaitForSeconds(strategyTime);
 
-        // SIGUIENTE WAVE
         currentWave++;
-        enemiesPerWave += 2;
-
-        // AUMENTAR DIFICULTAD
-        spawnInterval = Mathf.Max(0.2f, spawnInterval - spawnRateMultiplier);
-        strategyTime = Mathf.Max(0f, strategyTime - strategyReductionPerWave);
-
         StartCoroutine(RunWave());
     }
 
-    public void SpawnEnemy()
+    void SpawnEnemy()
     {
-        GameObject g = Instantiate(spawner.balloonPrefab, spawner.transform.position, Quaternion.identity);
-        Balloon balloon = g.GetComponent<Balloon>();
+        GameObject enemyGO = spawner.SpawnEnemyByWave(currentWave);
+        if (enemyGO == null) return;
 
-        if (balloon == null)
+        enemiesAlive++;
+
+        // --- Balloon ---
+        Balloon balloon = enemyGO.GetComponent<Balloon>();
+        Enemy enemy = enemyGO.GetComponent<Enemy>();
+
+        // Detecta si es jefe
+        EnemyEntry entry = spawner.enemies.Find(e => e.prefab == enemyGO);
+        if (entry != null && entry.isBoss)
         {
-            Debug.LogError("El prefab del enemigo no tiene el script Balloon.");
+            AudioManager.Instance.PlayBossMusic();
+        }
+        if (balloon != null)
+        {
+            float waveFactor = currentWave - 1;
+            balloon.speed *= 1f + (speedPerWave * waveFactor);
+            balloon.life = Mathf.RoundToInt(balloon.life * (1f + (lifePerWave * waveFactor)));
+
+            if (waypoints != null) balloon.path = waypoints;
+            balloon.waveManager = this;
             return;
         }
 
-        // Escalar dificultad por wave
-        float waveFactor = currentWave - 1;
+        // --- Enemy ---
+        if (enemy != null)
+        {
+            if (waypoints != null) enemy.SetPath(waypoints);
+            return;
+        }
 
-        balloon.speed += balloon.speed * (enemySpeedMultiplier * waveFactor);
-        balloon.life += Mathf.RoundToInt(balloon.life * (enemyLifeMultiplier * waveFactor));
-
-        balloon.waveManager = this;
-        enemiesAlive++;
+        // Si no es ninguno de los dos
+        Debug.LogWarning($"Prefab {enemyGO.name} no tiene Balloon ni Enemy.");
     }
 
     public void OnEnemyKilled()
     {
         enemiesAlive--;
-        if (enemiesAlive < 0)
-            enemiesAlive = 0;
+        if (enemiesAlive < 0) enemiesAlive = 0;
     }
 }

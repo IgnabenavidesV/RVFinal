@@ -1,20 +1,29 @@
-using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public class ElectricTower : MonoBehaviour
 {
     public float range = 8f;
-    public float chainRange = 4f;       // rango para la cadena
-    public int maxChainTargets = 3;     // cuántos enemigos puede aturdir
+    public float chainRange = 4f;
+    public int maxChainTargets = 3;
     public float fireRate = 1f;
     public float stunDuration = 0.5f;
     public int damage = 1;
 
     public Transform head;
+    public AudioClip shootAudioClip; // Audio al disparar
+    private AudioSource audioSource;
 
     private float fireCooldown = 0f;
     private Balloon currentTarget;
+
+    void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
+    }
 
     void Update()
     {
@@ -56,23 +65,22 @@ public class ElectricTower : MonoBehaviour
     {
         List<Balloon> hitEnemies = new();
 
-        // objetivo principal
         ApplyEffects(currentTarget);
         hitEnemies.Add(currentTarget);
 
-        // obtener todos los enemigos
+        if (shootAudioClip != null)
+            audioSource.PlayOneShot(shootAudioClip);
+
         var allEnemies = GameObject.FindGameObjectsWithTag("Enemy")
             .Select(e => e.GetComponent<Balloon>())
             .Where(b => b != null)
             .ToList();
 
-        // enemigos dentro del radio de la cadena
         var chainTargets = allEnemies
             .Where(e => !hitEnemies.Contains(e))
             .Where(e => Vector3.Distance(currentTarget.transform.position, e.transform.position) <= chainRange)
             .Take(maxChainTargets);
 
-        // aplicar stun y daño a cada extra
         foreach (var enemy in chainTargets)
         {
             ApplyEffects(enemy);
@@ -81,7 +89,6 @@ public class ElectricTower : MonoBehaviour
             Debug.DrawLine(currentTarget.transform.position, enemy.transform.position, Color.cyan, 0.2f);
         }
 
-        // rayo principal
         Debug.DrawLine(head.position, currentTarget.transform.position, Color.yellow, 0.2f);
     }
 

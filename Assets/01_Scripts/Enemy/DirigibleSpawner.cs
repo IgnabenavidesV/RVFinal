@@ -1,36 +1,41 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class DirigibleSpawner : MonoBehaviour
 {
-    [Header("Globos que va soltando")]
-    public GameObject balloonPrefab;       // globo que va a soltar (Balloon, Balloon2, etc.)
-    public Transform spawnPoint;           // punto desde donde salen los globos
-    public float spawnInterval = 2f;       // cada cuántos segundos suelta uno
-    public int maxBalloonsToSpawn = 10;    // cuántos como máximo
+    [Header("Dirigibles a spawnear")]
+    public GameObject dirigiblePrefab;
+
+    [Header("Puntos de Spawn")]
+    public Transform[] spawnPoints;   // Asigna aquÃ­ 4 puntos o los que quieras
+
+    [Header("Spawn Settings")]
+    public float spawnInterval = 5f;
+    public int maxDirigibles = 5;
 
     private float timer;
     private int spawnedCount;
 
-    private void Update()
+    void Update()
     {
-        if (spawnedCount >= maxBalloonsToSpawn) return;
+        if (spawnedCount >= maxDirigibles) return;
 
         timer += Time.deltaTime;
 
         if (timer >= spawnInterval)
         {
             timer = 0f;
-            SpawnBalloon();
+            SpawnDirigible();
         }
     }
 
-    private void SpawnBalloon()
+    void SpawnDirigible()
     {
-        if (balloonPrefab == null) return;
+        if (dirigiblePrefab == null || spawnPoints.Length == 0) return;
 
-        Transform point = spawnPoint != null ? spawnPoint : transform;
+        // ðŸ”¥ Spawn aleatorio
+        Transform point = spawnPoints[Random.Range(0, spawnPoints.Length)];
+        Instantiate(dirigiblePrefab, point.position, point.rotation);
 
-        Instantiate(balloonPrefab, point.position, point.rotation);
         spawnedCount++;
     }
 }

@@ -10,9 +10,18 @@ public class IceTower : MonoBehaviour
     public Transform head;
     public Transform shootPoint;
     public GameObject iceProjectilePrefab;
+    public AudioClip shootAudioClip; // Audio al disparar
+    private AudioSource audioSource;
 
     private float fireTimer = 0f;
     private Transform currentTarget;
+
+    void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
+    }
 
     void Update()
     {
@@ -56,21 +65,18 @@ public class IceTower : MonoBehaviour
         Vector3 dir = currentTarget.position - head.position;
         Quaternion lookRot = Quaternion.LookRotation(dir);
 
-        head.rotation = Quaternion.Lerp(
-            head.rotation,
-            lookRot,
-            rotationSpeed * Time.deltaTime
-        );
+        head.rotation = Quaternion.Lerp(head.rotation, lookRot, rotationSpeed * Time.deltaTime);
+
+        if (shootPoint != null)
+            shootPoint.rotation = lookRot;
     }
 
     void Shoot()
     {
-        GameObject go = Instantiate(
-            iceProjectilePrefab,
-            shootPoint.position,
-            shootPoint.rotation
-        );
-
+        GameObject go = Instantiate(iceProjectilePrefab, shootPoint.position, shootPoint.rotation);
         go.GetComponent<IceProjectile>().SetTarget(currentTarget);
+
+        if (shootAudioClip != null)
+            audioSource.PlayOneShot(shootAudioClip);
     }
 }
