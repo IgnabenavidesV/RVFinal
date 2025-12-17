@@ -38,6 +38,12 @@ public class Enemy : MonoBehaviour
     private bool isBurning = false;
     private bool isPoisoned = false;
 
+    [Header("VFX")]
+    [SerializeField] private GameObject deathExplosionPrefab;
+    [SerializeField] private Vector3 explosionOffset = Vector3.zero;
+    private bool deathVfxSpawned = false;
+
+
     private void Awake()
     {
         originalSpeed = moveSpeed;
@@ -176,14 +182,23 @@ public class Enemy : MonoBehaviour
         if (isDead) return;
         isDead = true;
 
+        // 🔒 asegurar que el VFX salga SOLO UNA VEZ
+        if (!deathVfxSpawned)
+        {
+            deathVfxSpawned = true;
+            SpawnDeathVFX();
+        }
+
         waveManager?.OnEnemyKilled();
 
-        // Dar dinero al jugador
         GameManager.Instance.AddMoney(moneyReward);
 
-        if (deathClip != null) audioSource.PlayOneShot(deathClip);
+        if (deathClip != null)
+            audioSource.PlayOneShot(deathClip);
+
         Destroy(gameObject, deathClip != null ? deathClip.length : 0f);
     }
+
 
     private void ReachGoal()
     {
@@ -208,4 +223,27 @@ public class Enemy : MonoBehaviour
         path = waypoints;
         currentPoint = 0;
     }
+    private void SpawnDeathVFX()
+    {
+        if (deathExplosionPrefab == null) return;
+
+        GameObject vfx = Instantiate(
+            deathExplosionPrefab,
+            transform.position + explosionOffset,
+            Quaternion.identity
+        );
+
+        // buscar el particle system principal
+        ParticleSystem ps = vfx.GetComponent<ParticleSystem>();
+        if (ps != null)
+        {
+            ps.Play();
+            Destroy(vfx, ps.main.duration + ps.main.startLifetime.constantMax + 0.3f);
+        }
+        else
+        {
+            Destroy(vfx, 3f); // fallback
+        }
+    }
+
 }
