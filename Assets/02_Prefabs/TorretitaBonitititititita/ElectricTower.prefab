@@ -405,6 +405,7 @@ MonoBehaviour:
   applySlow: 0
   slowPercent: 0.3
   slowDuration: 1.5
+  rotationSpeed: 5
   applyBurn: 0
   burnDuration: 2
   burnDps: 1
@@ -415,6 +416,9 @@ MonoBehaviour:
   shootPoint: {fileID: 4172833135132241685}
   beamPrefab: {fileID: 8568675602603328043, guid: 2a508abb4b8c9214aaa8f4b8d4a48af9, type: 3}
   shootAudioClip: {fileID: 8300000, guid: fee9806ec2d0df645a7f04d667afb303, type: 3}
+  hitVfxPrefab: {fileID: 3268624984472377111, guid: 8bb3692adec53ab458ca160663f9020b, type: 3}
+  hitVfxOffset: {x: 0, y: 0, z: 0}
+  spawnHitVfxForEachChain: 1
 --- !u!1001 &2786931189376822089
 PrefabInstance:
   m_ObjectHideFlags: 0

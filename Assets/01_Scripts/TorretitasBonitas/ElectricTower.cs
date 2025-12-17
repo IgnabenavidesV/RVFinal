@@ -41,6 +41,12 @@ public class ElectricTower : MonoBehaviour
     float cooldown = 0f;
     Transform currentTarget;
 
+    [Header("Hit VFX (Impacto)")]
+    public GameObject hitVfxPrefab;              // tu particula de impacto rayo
+    public Vector3 hitVfxOffset = Vector3.zero;
+    public bool spawnHitVfxForEachChain = true;  // si quieres impacto por cada salto
+
+
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
@@ -179,13 +185,43 @@ public class ElectricTower : MonoBehaviour
 
     void SpawnBeam(Vector3 from, Vector3 to)
     {
-        if (beamPrefab == null) return;
+        if (beamPrefab != null)
+        {
+            GameObject go = Instantiate(beamPrefab);
+            var beam = go.GetComponent<LightningBeam>();
+            if (beam != null) beam.Draw(from, to);
+        }
 
-        GameObject go = Instantiate(beamPrefab);
-        var beam = go.GetComponent<LightningBeam>();
-        if (beam != null) beam.Draw(from, to);
+        // ✅ VFX de impacto en el enemigo (punto "to")
+        if (hitVfxPrefab != null)
+        {
+            GameObject vfx = Instantiate(hitVfxPrefab, to + hitVfxOffset, Quaternion.identity);
 
-        // Debug line por si no tienes beamPrefab
+            // fuerza one-shot y autodestruye
+            var systems = vfx.GetComponentsInChildren<ParticleSystem>(true);
+            float maxLife = 0f;
+
+            foreach (var ps in systems)
+            {
+                var main = ps.main;
+                main.loop = false;
+
+                ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                ps.Play(true);
+
+                float life = main.duration;
+                if (main.startLifetime.mode == ParticleSystemCurveMode.TwoConstants)
+                    life += main.startLifetime.constantMax;
+                else if (main.startLifetime.mode == ParticleSystemCurveMode.Constant)
+                    life += main.startLifetime.constant;
+
+                if (life > maxLife) maxLife = life;
+            }
+
+            Destroy(vfx, maxLife + 0.3f);
+        }
+
         Debug.DrawLine(from, to, Color.cyan, 0.1f);
     }
+
 }
