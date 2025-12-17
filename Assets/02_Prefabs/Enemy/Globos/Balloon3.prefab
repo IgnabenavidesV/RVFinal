@@ -28,8 +28,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2630533939110748266}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.1018, y: 0, z: -3.02548}
+  m_LocalRotation: {x: 0, y: 0.7818447, z: 0, w: 0.62347335}
+  m_LocalPosition: {x: -12.510774, y: 2.8234909, z: -8.789075}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -125,7 +125,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe5ebc03accf3c345ae8d51f112c1527, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  maxHealth: 15
+  health: 20
   damageToPlayer: 1
   moveSpeed: 3
   path: []
@@ -136,6 +136,8 @@ MonoBehaviour:
   rotationSpeed: 20
   deathClip: {fileID: 8300000, guid: d7a753239d4a2b849abc80b2f61bad85, type: 3}
   reachGoalClip: {fileID: 8300000, guid: 5f02f5559dae7b045acd0425a4af8cc5, type: 3}
+  moneyReward: 15
+  waveManager: {fileID: 0}
 --- !u!1001 &1839764643781880414
 PrefabInstance:
   m_ObjectHideFlags: 0

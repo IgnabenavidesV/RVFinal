@@ -70,7 +70,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 26cd9f0b8b266b040aa5400300e2446e, type: 3}
       propertyPath: m_TagString
-      value: Enemy
+      value: Boss
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -103,12 +103,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f326d268829ce54ebc2b12fe00fcda7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Balloon
+  health: 50
   speed: 2
-  life: 30
+  moneyReward: 50
   path: []
-  floatAmplitude: 0.003
-  floatFrequency: 1
-  rotationSpeed: 20
   waveManager: {fileID: 0}
 --- !u!54 &5148550027757438736
 Rigidbody:

@@ -4,119 +4,188 @@ using UnityEngine;
 
 public class ElectricTower : MonoBehaviour
 {
+    [Header("Range")]
     public float range = 8f;
     public float chainRange = 4f;
     public int maxChainTargets = 3;
-    public float fireRate = 1f;
-    public float stunDuration = 0.5f;
-    public int damage = 1;
 
+    [Header("Combat")]
+    public float fireRate = 1f;
+    public int damage = 1;
+    public float stunDuration = 0.5f;
+
+    [Header("Extra Effects (opcional)")]
+    public bool applySlow = false;
+    [Range(0f, 1f)] public float slowPercent = 0.3f;
+    public float slowDuration = 1.5f;
+    [Header("Rotation")]
+    public float rotationSpeed = 5f;
+
+    public bool applyBurn = false;
+    public float burnDuration = 2f;
+    public float burnDps = 1f;
+
+    public bool applyPoison = false;
+    public float poisonDuration = 3f;
+    public float poisonDps = 1f;
+
+    [Header("Refs")]
     public Transform head;
+    public Transform shootPoint; // si no tienes, usa head
+    public GameObject beamPrefab; // LightningBeam prefab
+
+    [Header("Audio")]
     public AudioClip shootAudioClip;
     private AudioSource audioSource;
 
-    private float fireCooldown = 0f;
-    private MonoBehaviour currentTarget; // Puede ser Balloon o Enemy
+    float cooldown = 0f;
+    Transform currentTarget;
 
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-            audioSource = gameObject.AddComponent<AudioSource>();
+        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+        if (shootPoint == null) shootPoint = head;
+        cooldown = 1f / fireRate;
     }
 
     void Update()
     {
-        fireCooldown -= Time.deltaTime;
+        cooldown -= Time.deltaTime;
 
-        FindTarget();
+        currentTarget = FindClosestTarget(range);
+        if (currentTarget == null) return;
 
-        if (currentTarget != null)
+        RotateHead();
+
+
+        if (cooldown <= 0f)
         {
-            RotateTowardsTarget();
+            FireChain(currentTarget);
+            cooldown = 1f / fireRate;
+        }
+    }
 
-            if (fireCooldown <= 0f)
+    Transform FindClosestTarget(float r)
+    {
+        var enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        float best = float.MaxValue;
+        Transform bestT = null;
+
+        foreach (var go in enemies)
+        {
+            float d = Vector3.Distance(transform.position, go.transform.position);
+            if (d <= r && d < best)
             {
-                ShootElectricRay();
-                fireCooldown = 1f / fireRate;
+                best = d;
+                bestT = go.transform;
             }
         }
+        return bestT;
     }
 
-    void FindTarget()
+ 
+    void RotateHead()
     {
-        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        if (currentTarget == null || head == null)
+            return;
 
-        currentTarget = enemies
-            .Select(e => e.GetComponent<Balloon>() as MonoBehaviour ?? e.GetComponent<Enemy>())
-            .Where(e => e != null && Vector3.Distance(transform.position, e.transform.position) <= range)
-            .OrderBy(e => Vector3.Distance(transform.position, e.transform.position))
-            .FirstOrDefault();
-    }
+        // Dirección hacia el enemigo (solo horizontal)
+        Vector3 dir = currentTarget.position - head.position;
+        dir.y = 0; // Mantener solo rotación horizontal
 
-    void RotateTowardsTarget()
-    {
-        Vector3 dir = currentTarget.transform.position - head.position;
-        Quaternion lookRot = Quaternion.LookRotation(dir);
-        head.rotation = Quaternion.Lerp(head.rotation, lookRot, Time.deltaTime * 8f);
-    }
-
-    void ShootElectricRay()
-    {
-        List<MonoBehaviour> hitEnemies = new();
-
-        ApplyEffects(currentTarget);
-        hitEnemies.Add(currentTarget);
-
-        if (shootAudioClip != null)
-            audioSource.PlayOneShot(shootAudioClip);
-
-        var allEnemies = GameObject.FindGameObjectsWithTag("Enemy")
-            .Select(e => e.GetComponent<Balloon>() as MonoBehaviour ?? e.GetComponent<Enemy>())
-            .Where(e => e != null)
-            .ToList();
-
-        var chainTargets = allEnemies
-            .Where(e => !hitEnemies.Contains(e))
-            .Where(e => Vector3.Distance(currentTarget.transform.position, e.transform.position) <= chainRange)
-            .Take(maxChainTargets);
-
-        foreach (var enemy in chainTargets)
+        if (dir.sqrMagnitude > 0.001f)
         {
-            ApplyEffects(enemy);
-            hitEnemies.Add(enemy);
+            Quaternion targetRot = Quaternion.LookRotation(dir);
+            head.rotation = Quaternion.Lerp(head.rotation, targetRot, rotationSpeed * Time.deltaTime);
+        }
+    }
+    void FireChain(Transform first)
+    {
+        // Lista de objetivos ya golpeados
+        List<Transform> hit = new() { first };
 
-            Debug.DrawLine(currentTarget.transform.position, enemy.transform.position, Color.cyan, 0.2f);
+        // 1) Primer impacto
+        ApplyEffectsTo(first);
+        SpawnBeam(shootPoint.position, first.position);
+
+        if (shootAudioClip != null) audioSource.PlayOneShot(shootAudioClip);
+
+        // 2) Cadena: busca cerca del último golpeado
+        Transform from = first;
+
+        for (int i = 0; i < maxChainTargets; i++)
+        {
+            Transform next = FindClosestAround(from.position, chainRange, hit);
+            if (next == null) break;
+
+            hit.Add(next);
+            ApplyEffectsTo(next);
+            SpawnBeam(from.position, next.position);
+
+            from = next;
+        }
+    }
+
+    Transform FindClosestAround(Vector3 center, float r, List<Transform> exclude)
+    {
+        var enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        float best = float.MaxValue;
+        Transform bestT = null;
+
+        foreach (var go in enemies)
+        {
+            Transform t = go.transform;
+            if (exclude.Contains(t)) continue;
+
+            float d = Vector3.Distance(center, t.position);
+            if (d <= r && d < best)
+            {
+                best = d;
+                bestT = t;
+            }
+        }
+        return bestT;
+    }
+
+    void ApplyEffectsTo(Transform target)
+    {
+        Debug.Log($"[ElectricTower] ZAP {target.name} time={Time.time:F2}");
+
+        // ✅ Soporta collider en hijo: busca componente en el padre también
+        Enemy e = target.GetComponentInParent<Enemy>();
+        if (e != null)
+        {
+            e.TakeDamage(damage);
+            e.ApplyStun(stunDuration);
+
+            if (applySlow) e.ApplySlow(slowPercent, slowDuration);
+            if (applyBurn) e.ApplyBurn(burnDuration, burnDps);
+            if (applyPoison) e.ApplyPoison(poisonDuration, poisonDps);
+            return;
         }
 
-        Debug.DrawLine(head.position, currentTarget.transform.position, Color.yellow, 0.2f);
-    }
-
-    void ApplyEffects(MonoBehaviour enemy)
-    {
-        // --- Balloon ---
-        Balloon b = enemy.GetComponent<Balloon>();
+        Balloon b = target.GetComponentInParent<Balloon>();
         if (b != null)
         {
             b.TakeDamage(damage);
             b.ApplyStun(stunDuration);
-            b.ApplySlow(0.5f, 2f);    // ejemplo de slow
-            b.ApplyBurn(3f, 1f);      // ejemplo de burn
-            b.ApplyPoison(4f, 1f);    // ejemplo de poison
-            return;
-        }
 
-        // --- Enemy ---
-        Enemy e = enemy.GetComponent<Enemy>();
-        if (e != null)
-        {
-            e.TakeDamage(damage);
-
-            // Para stun y slow en Enemy, agrega métodos similares a Balloon
-            e.ApplyStun(stunDuration);
-            e.ApplySlow(0.5f, 2f);
-            e.ApplyBurn(3f, 1f);
-            e.ApplyPoison(4f, 1f);
+            if (applySlow) b.ApplySlow(slowPercent, slowDuration);
+            if (applyBurn) b.ApplyBurn(burnDuration, burnDps);
+            if (applyPoison) b.ApplyPoison(poisonDuration, poisonDps);
         }
+    }
+
+    void SpawnBeam(Vector3 from, Vector3 to)
+    {
+        if (beamPrefab == null) return;
+
+        GameObject go = Instantiate(beamPrefab);
+        var beam = go.GetComponent<LightningBeam>();
+        if (beam != null) beam.Draw(from, to);
+
+        // Debug line por si no tienes beamPrefab
+        Debug.DrawLine(from, to, Color.cyan, 0.1f);
     }
 }

@@ -8,7 +8,7 @@ public class BazookaPickup : MonoBehaviour
     public GameObject bazookaPrefab;
 
     private XRSimpleInteractable interactable;
-    private bool picked;
+    private bool picked = false;
 
     private void Awake()
     {
@@ -17,9 +17,10 @@ public class BazookaPickup : MonoBehaviour
 
     private void OnEnable()
     {
-        picked = false; // ? IMPORTANTE: permitir volver a pickear
+        // ? IMPORTANTÍSIMO: si el pedestal vuelve a activarse, debe poder pickearse otra vez
+        picked = false;
+
         interactable.selectEntered.AddListener(OnPick);
-        interactable.enabled = true; // por si algo lo deshabilitó
     }
 
     private void OnDisable()
@@ -29,13 +30,20 @@ public class BazookaPickup : MonoBehaviour
 
     private void OnPick(SelectEnterEventArgs args)
     {
-        if (picked) return;  // ? evita doble pick
+        if (picked) return;
         picked = true;
 
-        if (WeaponManager.Instance == null) return;
+        if (WeaponManager.Instance == null) { picked = false; return; }
+
+        if (WeaponManager.Instance.inventory != null &&
+            WeaponManager.Instance.inventory.Count > 0)
+        {
+            Debug.Log("Vacía el inventario para usar la bazooka");
+            picked = false; // permitir intentar otra vez
+            return;
+        }
 
         WeaponManager.Instance.EquipWeapon(bazookaPrefab, gameObject);
-
         gameObject.SetActive(false);
     }
 }

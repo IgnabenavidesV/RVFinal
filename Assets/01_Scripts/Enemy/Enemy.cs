@@ -3,8 +3,8 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    [Header("Stats")]
-    public int maxHealth = 1;
+    [Header("Stats (Inspector)")]
+    [Min(1)] public int health = 3;
     public int damageToPlayer = 1;
     public float moveSpeed = 2f;
 
@@ -22,15 +22,16 @@ public class Enemy : MonoBehaviour
     [Header("Audio")]
     public AudioClip deathClip;
     public AudioClip reachGoalClip;
+
+    [Header("Economía")]
+    public int moneyReward = 5; // Editable en el inspector
+
+    [HideInInspector] public WaveManager waveManager;
+
     private AudioSource audioSource;
-
-    [HideInInspector] public WaveManager waveManager; // <-- referencia al WaveManager
-
-    private Vector3 startPos;
-    private int currentHealth;
     private bool isDead = false;
 
-    // --- SISTEMA DE EFECTOS ---
+    // Efectos
     private float originalSpeed;
     private float slowTimer = 0f;
     private bool isStunned = false;
@@ -39,25 +40,22 @@ public class Enemy : MonoBehaviour
 
     private void Awake()
     {
-        currentHealth = maxHealth;
         originalSpeed = moveSpeed;
-        startPos = transform.position;
-        gameObject.tag = "Enemy";
-
         audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-            audioSource = gameObject.AddComponent<AudioSource>();
+        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+
+        // Tag del enemigo
+        gameObject.tag = "Enemy";
     }
 
     private void Update()
     {
         if (isDead) return;
 
-        if (slowTimer > 0)
+        if (slowTimer > 0f)
         {
             slowTimer -= Time.deltaTime;
-            if (slowTimer <= 0)
-                moveSpeed = originalSpeed;
+            if (slowTimer <= 0f) moveSpeed = originalSpeed;
         }
 
         if (path != null && path.Length > 0 && !isStunned)
@@ -95,13 +93,20 @@ public class Enemy : MonoBehaviour
         transform.Rotate(Vector3.forward, rotationSpeed / 2f * Time.deltaTime, Space.World);
     }
 
+    // ====== DAÑO / EFECTOS ======
     public void TakeDamage(int amount)
     {
         if (isDead) return;
 
-        currentHealth -= amount;
-        if (currentHealth <= 0)
-            Die();
+        health -= amount;
+
+        if (health <= 0) Die();
+    }
+
+    public void ApplySlow(float percent, float duration)
+    {
+        moveSpeed = originalSpeed * (1f - percent);
+        slowTimer = duration;
     }
 
     public void ApplyStun(float duration)
@@ -113,19 +118,13 @@ public class Enemy : MonoBehaviour
     private IEnumerator StunRoutine(float duration)
     {
         isStunned = true;
-        float original = moveSpeed;
-        moveSpeed = 0;
+        float saved = moveSpeed;
+        moveSpeed = 0f;
 
         yield return new WaitForSeconds(duration);
 
-        moveSpeed = original;
+        moveSpeed = saved;
         isStunned = false;
-    }
-
-    public void ApplySlow(float percent, float duration)
-    {
-        moveSpeed = originalSpeed * (1f - percent);
-        slowTimer = duration;
     }
 
     public void ApplyBurn(float duration, float dps)
@@ -152,7 +151,7 @@ public class Enemy : MonoBehaviour
 
     public void ApplyPoison(float duration, float dps)
     {
-        if (isPoisoned) StopCoroutine(PoisonRoutine(duration, dps));
+        if (isPoisoned) StopCoroutine(nameof(PoisonRoutine));
         StartCoroutine(PoisonRoutine(duration, dps));
     }
 
@@ -177,22 +176,25 @@ public class Enemy : MonoBehaviour
         if (isDead) return;
         isDead = true;
 
-        waveManager?.OnEnemyKilled(); // <-- notificar al WaveManager
+        waveManager?.OnEnemyKilled();
 
-        if (deathClip != null)
-            audioSource.PlayOneShot(deathClip);
+        // Dar dinero al jugador
+        GameManager.Instance.AddMoney(moneyReward);
 
+        if (deathClip != null) audioSource.PlayOneShot(deathClip);
         Destroy(gameObject, deathClip != null ? deathClip.length : 0f);
     }
 
-    public void ReachGoal()
+    private void ReachGoal()
     {
         if (isDead) return;
         isDead = true;
 
-        waveManager?.OnEnemyKilled(); // <-- notificar al WaveManager
+        // ✅ DAÑO AL PLAYER
+        if (GameManager.Instance != null)
+            GameManager.Instance.TakeDamage(damageToPlayer);
 
-        Debug.Log($"Enemy llegó a la meta y hace {damageToPlayer} de daño");
+        waveManager?.OnEnemyKilled();
 
         if (reachGoalClip != null)
             audioSource.PlayOneShot(reachGoalClip);
@@ -200,10 +202,10 @@ public class Enemy : MonoBehaviour
         Destroy(gameObject, reachGoalClip != null ? reachGoalClip.length : 0f);
     }
 
+
     public void SetPath(Transform[] waypoints)
     {
         path = waypoints;
         currentPoint = 0;
-        startPos = transform.position;
     }
 }
