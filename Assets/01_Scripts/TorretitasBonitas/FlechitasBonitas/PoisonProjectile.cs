@@ -12,6 +12,11 @@ public class PoisonProjectile : MonoBehaviour
     public float lifeTime = 3f;
     public float explosionRadius = 0f;
 
+    [Header("Hit VFX")]
+    [SerializeField] private GameObject hitVfxPrefab;      // ✅ GoopSprayEffect prefab
+    [SerializeField] private Vector3 hitVfxOffset = Vector3.zero;
+    [SerializeField] private bool spawnVfxOnAoE = true;    // ✅ si explota en área, spawnea 1 VFX en el centro
+
     private Transform target;
 
     public void SetTarget(Transform t) => target = t;
@@ -40,6 +45,10 @@ public class PoisonProjectile : MonoBehaviour
     {
         if (!col.CompareTag("Enemy")) return;
 
+        // ✅ VFX solo cuando pega
+        SpawnHitVFX(col.ClosestPoint(transform.position));
+
+
         if (explosionRadius > 0f) Explode();
         else ApplyToOne(col);
 
@@ -57,6 +66,9 @@ public class PoisonProjectile : MonoBehaviour
 
     void Explode()
     {
+        if (spawnVfxOnAoE)
+            SpawnHitVFX(transform.position);
+
         Collider[] hits = Physics.OverlapSphere(transform.position, explosionRadius);
         foreach (Collider hit in hits)
         {
@@ -68,5 +80,35 @@ public class PoisonProjectile : MonoBehaviour
             Balloon b = hit.GetComponentInParent<Balloon>();
             if (b != null) { b.TakeDamage(impactDamage); b.ApplyPoison(poisonDuration, poisonDPS); }
         }
+    }
+
+    private void SpawnHitVFX(Vector3 pos)
+    {
+        if (hitVfxPrefab == null) return;
+
+        GameObject vfx = Instantiate(hitVfxPrefab, pos + hitVfxOffset, Quaternion.identity);
+
+        // fuerza que se reproduzca y se autodestruya
+        var systems = vfx.GetComponentsInChildren<ParticleSystem>(true);
+        float maxLife = 0f;
+
+        foreach (var ps in systems)
+        {
+            var main = ps.main;
+            main.loop = false;
+
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            ps.Play(true);
+
+            float life = main.duration;
+            if (main.startLifetime.mode == ParticleSystemCurveMode.TwoConstants)
+                life += main.startLifetime.constantMax;
+            else if (main.startLifetime.mode == ParticleSystemCurveMode.Constant)
+                life += main.startLifetime.constant;
+
+            if (life > maxLife) maxLife = life;
+        }
+
+        Destroy(vfx, maxLife + 0.3f);
     }
 }

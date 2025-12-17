@@ -138,7 +138,7 @@ MonoBehaviour:
   reachGoalClip: {fileID: 8300000, guid: 5f02f5559dae7b045acd0425a4af8cc5, type: 3}
   moneyReward: 5
   waveManager: {fileID: 0}
-  deathExplosionPrefab: {fileID: 1828176872806910, guid: 64891a0eb28db934898420d80ca07cb3, type: 3}
+  deathExplosionPrefab: {fileID: 1121192042590650, guid: e1b08032bec16ba4eb1ae23cbd572664, type: 3}
   explosionOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &4167295263544106770
 PrefabInstance:
