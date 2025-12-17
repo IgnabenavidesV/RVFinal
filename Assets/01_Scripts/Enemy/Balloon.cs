@@ -13,6 +13,11 @@ public class Balloon : MonoBehaviour
     [HideInInspector] public Transform[] path;
     [HideInInspector] public WaveManager waveManager;
 
+    [Header("VFX")]
+    [SerializeField] private GameObject deathExplosionPrefab;
+    [SerializeField] private Vector3 explosionOffset = Vector3.zero;
+    private bool deathVfxSpawned = false;
+
     private int currentPoint = 0;
     private float originalSpeed;
     private float slowTimer = 0f;
@@ -62,6 +67,13 @@ public class Balloon : MonoBehaviour
 
             // Dar dinero al jugador
             GameManager.Instance.AddMoney(moneyReward);
+
+            // ✅ VFX solo una vez
+            if (!deathVfxSpawned)
+            {
+                deathVfxSpawned = true;
+                SpawnDeathVFX();
+            }
 
             Destroy(gameObject);
         }
@@ -128,5 +140,27 @@ public class Balloon : MonoBehaviour
         }
 
         isPoisoned = false;
+    }
+
+    private void SpawnDeathVFX()
+    {
+        if (deathExplosionPrefab == null) return;
+
+        GameObject vfx = Instantiate(
+            deathExplosionPrefab,
+            transform.position + explosionOffset,
+            Quaternion.identity
+        );
+
+        ParticleSystem ps = vfx.GetComponent<ParticleSystem>();
+        if (ps != null)
+        {
+            ps.Play();
+            Destroy(vfx, ps.main.duration + ps.main.startLifetime.constantMax + 0.3f);
+        }
+        else
+        {
+            Destroy(vfx, 3f);
+        }
     }
 }
