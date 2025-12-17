@@ -24,13 +24,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6513049639273714511}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.01257, y: 0, z: 0}
+  m_LocalRotation: {x: 0.70710677, y: 0, z: 0, w: 0.70710677}
+  m_LocalPosition: {x: 0.01385, y: 0.00002998778, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2863497357582279000}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 90, z: 90}
 --- !u!1001 &2321489960064730803
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -233,7 +233,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BazookaWeapon
   firePoint: {fileID: 8478348025441808568}
   projectilePrefab: {fileID: 4487779681882122593, guid: 043015e55f24aa6499b8f09a3c3c145d, type: 3}
-  fireCooldown: 1
+  fireCooldown: 2
   fireAction:
     m_UseReference: 1
     m_Action:
@@ -258,3 +258,4 @@ MonoBehaviour:
       m_SingletonActionBindings: []
       m_Flags: 0
     m_Reference: {fileID: -5982496924579745919, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+  shootClip: {fileID: 8300000, guid: d28ea83fb8de562479e718d0a4256592, type: 3}

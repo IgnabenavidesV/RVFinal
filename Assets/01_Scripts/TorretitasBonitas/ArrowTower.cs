@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class ArrowTower : MonoBehaviour
 {
@@ -8,29 +9,30 @@ public class ArrowTower : MonoBehaviour
     public float fireRate = 1f;
     public float rotationSpeed = 5f;
 
+    [Header("Damage (Inspector)")]
+    public int damage = 10;
+
     [Header("References")]
     public Transform head;
     public Transform shootPoint;
     public GameObject arrowPrefab;
-    public AudioClip shootAudioClip; // Audio al disparar
+    public AudioClip shootAudioClip;
     private AudioSource audioSource;
 
     private float fireCooldown;
-    private List<Transform> enemiesInRange = new List<Transform>();
-    private Transform currentTarget;
+    private List<MonoBehaviour> enemiesInRange = new List<MonoBehaviour>();
+    private MonoBehaviour currentTarget;
 
     void Start()
     {
-        // Configuramos AudioSource automáticamente
         audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-            audioSource = gameObject.AddComponent<AudioSource>();
+        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
     }
 
     void Update()
     {
         SelectTarget();
-        if (currentTarget) AimAtTarget();
+        if (currentTarget != null) AimAtTarget();
 
         if (currentTarget != null && fireCooldown <= 0f)
         {
@@ -44,53 +46,84 @@ public class ArrowTower : MonoBehaviour
     void SelectTarget()
     {
         float shortestDist = Mathf.Infinity;
-        Transform nearestEnemy = null;
+        MonoBehaviour nearest = null;
+
+        enemiesInRange = enemiesInRange
+            .Where(e => e != null && Vector3.Distance(transform.position, e.transform.position) <= range)
+            .ToList();
 
         foreach (var enemy in enemiesInRange)
         {
-            if (enemy == null) continue;
-
-            float dist = Vector3.Distance(transform.position, enemy.position);
+            float dist = Vector3.Distance(transform.position, enemy.transform.position);
             if (dist < shortestDist)
             {
                 shortestDist = dist;
-                nearestEnemy = enemy;
+                nearest = enemy;
             }
         }
 
-        currentTarget = nearestEnemy;
+        currentTarget = nearest;
     }
 
     void AimAtTarget()
     {
-        Vector3 dir = currentTarget.position - head.position;
-        Quaternion lookRotation = Quaternion.LookRotation(dir);
-        head.rotation = Quaternion.Lerp(head.rotation, lookRotation, Time.deltaTime * rotationSpeed);
+        if (currentTarget == null || head == null) return;
+
+        Vector3 dir = currentTarget.transform.position - head.position;
+        dir.y = 0;
+
+        if (dir.sqrMagnitude > 0.001f)
+        {
+            Quaternion targetRot = Quaternion.LookRotation(dir);
+            head.rotation = Quaternion.Lerp(head.rotation, targetRot, rotationSpeed * Time.deltaTime);
+        }
 
         if (shootPoint != null)
-        {
-            shootPoint.rotation = lookRotation;
-        }
+            shootPoint.LookAt(currentTarget.transform.position);
     }
 
     void Shoot()
     {
         GameObject arrowObj = Instantiate(arrowPrefab, shootPoint.position, shootPoint.rotation);
-        arrowObj.GetComponent<ArrowProjectile>().SetTarget(currentTarget);
+
+        ArrowProjectile proj = arrowObj.GetComponent<ArrowProjectile>();
+        if (proj != null)
+            proj.SetTarget(currentTarget.transform);
+
+        // ✅ DAÑO desde Inspector
+        ApplyDamage(currentTarget);
 
         if (shootAudioClip != null)
             audioSource.PlayOneShot(shootAudioClip);
     }
 
+    void ApplyDamage(MonoBehaviour enemy)
+    {
+        Balloon b = enemy.GetComponent<Balloon>();
+        if (b != null)
+        {
+            b.TakeDamage(damage);
+            return;
+        }
+
+        Enemy e = enemy.GetComponent<Enemy>();
+        if (e != null)
+        {
+            e.TakeDamage(damage);
+        }
+    }
+
     private void OnTriggerEnter(Collider col)
     {
-        if (col.CompareTag("Enemy"))
-            enemiesInRange.Add(col.transform);
+        MonoBehaviour enemy = col.GetComponent<Balloon>() as MonoBehaviour ?? col.GetComponent<Enemy>();
+        if (enemy != null && !enemiesInRange.Contains(enemy))
+            enemiesInRange.Add(enemy);
     }
 
     private void OnTriggerExit(Collider col)
     {
-        if (col.CompareTag("Enemy"))
-            enemiesInRange.Remove(col.transform);
+        MonoBehaviour enemy = col.GetComponent<Balloon>() as MonoBehaviour ?? col.GetComponent<Enemy>();
+        if (enemy != null)
+            enemiesInRange.Remove(enemy);
     }
 }

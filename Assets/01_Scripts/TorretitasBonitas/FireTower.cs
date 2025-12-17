@@ -9,65 +9,57 @@ public class FireTower : MonoBehaviour
     public Transform head;
     public Transform shootPoint;
     public GameObject fireProjectilePrefab;
-    public AudioClip shootAudioClip; // Audio al disparar
+
+    public AudioClip shootAudioClip;
     private AudioSource audioSource;
 
-    private float cooldown = 0f;
-    private Balloon target;
+    float cooldown;
+    Transform currentTarget;
 
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
+        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+        cooldown = 1f / fireRate;
     }
 
     void Update()
     {
         cooldown -= Time.deltaTime;
 
-        FindTarget();
+        currentTarget = FindTarget();
+        if (currentTarget == null) return;
 
-        if (target != null)
+        RotateTowards(currentTarget.position);
+
+        if (cooldown <= 0f)
         {
-            RotateTowardsTarget();
-
-            if (cooldown <= 0f)
-            {
-                Shoot();
-                cooldown = 1f / fireRate;
-            }
+            Shoot(currentTarget);
+            cooldown = 1f / fireRate;
         }
     }
 
-    void FindTarget()
+    Transform FindTarget()
     {
-        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
-
-        target = enemies
-            .Select(e => e.GetComponent<Balloon>())
-            .Where(b => b != null && Vector3.Distance(transform.position, b.transform.position) <= range)
-            .OrderBy(b => Vector3.Distance(transform.position, b.transform.position))
+        return GameObject.FindGameObjectsWithTag("Enemy")
+            .Where(e => Vector3.Distance(transform.position, e.transform.position) <= range)
+            .OrderBy(e => Vector3.Distance(transform.position, e.transform.position))
+            .Select(e => e.transform)
             .FirstOrDefault();
     }
 
-    void RotateTowardsTarget()
+    void RotateTowards(Vector3 pos)
     {
-        Vector3 dir = target.transform.position - head.position;
-        Quaternion rot = Quaternion.LookRotation(dir);
-        head.rotation = Quaternion.Lerp(head.rotation, rot, Time.deltaTime * 5f);
-
-        if (shootPoint != null)
-            shootPoint.rotation = head.rotation;
+        Vector3 dir = pos - head.position;
+        if (dir.sqrMagnitude < 0.001f) return;
+        head.rotation = Quaternion.Lerp(head.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 5f);
+        if (shootPoint != null) shootPoint.rotation = head.rotation;
     }
 
-    void Shoot()
+    void Shoot(Transform target)
     {
         GameObject proj = Instantiate(fireProjectilePrefab, shootPoint.position, shootPoint.rotation);
-        FireProjectile p = proj.GetComponent<FireProjectile>();
-        p.SetTarget(target.transform);
+        proj.GetComponent<FireProjectile>().SetTarget(target);
 
         if (shootAudioClip != null)
             audioSource.PlayOneShot(shootAudioClip);

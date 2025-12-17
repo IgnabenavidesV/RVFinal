@@ -1,32 +1,27 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class IceProjectile : MonoBehaviour
 {
+    [Header("Movement")]
     public float speed = 15f;
-    public float slowPercent = 0.5f;   // 50% menos velocidad
-    public float slowDuration = 2f;    // durante 2s
-    public int damage = 5;
     public float lifeTime = 3f;
+
+    [Header("Damage")]
+    public int damage = 1;
+
+    [Header("Ice Effect")]
+    [Range(0f, 1f)] public float slowPercent = 0.5f;
+    public float slowDuration = 2f;
 
     private Transform target;
 
-    public void SetTarget(Transform t)
-    {
-        target = t;
-    }
+    public void SetTarget(Transform t) => target = t;
 
-    void Start()
-    {
-        Destroy(gameObject, lifeTime);
-    }
+    private void Start() => Destroy(gameObject, lifeTime);
 
-    void Update()
+    private void Update()
     {
-        if (target == null)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (target == null) { Destroy(gameObject); return; }
 
         Vector3 dir = (target.position - transform.position).normalized;
         transform.position += dir * speed * Time.deltaTime;
@@ -35,16 +30,26 @@ public class IceProjectile : MonoBehaviour
 
     private void OnTriggerEnter(Collider col)
     {
-        if (!col.CompareTag("Enemy")) return;
+        Debug.Log($"[Projectile] HIT collider={col.name}");
 
-        Balloon b = col.GetComponent<Balloon>();
-
-        if (b != null)
+        // 1) Enemy normal
+        Enemy enemy = col.GetComponentInParent<Enemy>();
+        if (enemy != null)
         {
-            b.ApplySlow(slowPercent, slowDuration);
-            b.TakeDamage(damage);
+            enemy.TakeDamage(damage);
+            enemy.ApplySlow(slowPercent, slowDuration);
+            Destroy(gameObject);
+            return;
         }
 
-        Destroy(gameObject);
+        // 2) Boss
+        Balloon boss = col.GetComponentInParent<Balloon>();
+        if (boss != null)
+        {
+            boss.TakeDamage(damage);
+            boss.ApplySlow(slowPercent, slowDuration);
+            Destroy(gameObject);
+            return;
+        }
     }
 }

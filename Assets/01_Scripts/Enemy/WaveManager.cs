@@ -1,30 +1,22 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 
 public class WaveManager : MonoBehaviour
 {
     [Header("Spawner")]
     public EnemySpawner spawner;
+    private bool bossSpawned = false;
 
     [Header("Wave Settings")]
     public int currentWave = 1;
     public int baseEnemiesPerWave = 5;
-    public float baseSpawnInterval = 1.5f;
-    public float baseStrategyTime = 5f;
+    public float spawnInterval = 0.5f;
 
     [Header("Difficulty Scaling")]
-    public float enemiesIncreasePerWave = 2f;
-    public float spawnIntervalReduction = 0.07f;
-    public float strategyReduction = 0.3f;
     public float speedPerWave = 0.08f;
     public float lifePerWave = 0.15f;
 
-    [Header("Limits")]
-    public float minSpawnInterval = 0.3f;
-    public float minStrategyTime = 1f;
-
     private int enemiesAlive = 0;
-
     private Transform[] waypoints;
 
     void Start()
@@ -35,32 +27,22 @@ public class WaveManager : MonoBehaviour
             return;
         }
 
-        // Obtener waypoints una sola vez
-        var wpParent = GameObject.Find("Waypoints");
+        GameObject wpParent = GameObject.Find("Waypoints");
         if (wpParent != null)
         {
             waypoints = new Transform[wpParent.transform.childCount];
             for (int i = 0; i < wpParent.transform.childCount; i++)
-            {
                 waypoints[i] = wpParent.transform.GetChild(i);
-            }
-        }
-        else
-        {
-            Debug.LogError("WaveManager: No se encontró GameObject 'Waypoints'.");
         }
 
+        AudioManager.Instance.PlayBackgroundMusic();
         StartCoroutine(RunWave());
     }
 
-    IEnumerator RunWave()
+    private IEnumerator RunWave()
     {
-        enemiesAlive = 0;
-
-        int enemiesToSpawn = baseEnemiesPerWave + Mathf.RoundToInt(currentWave * enemiesIncreasePerWave);
-
-        float spawnInterval = Mathf.Max(minSpawnInterval, baseSpawnInterval - currentWave * spawnIntervalReduction);
-        float strategyTime = Mathf.Max(minStrategyTime, baseStrategyTime - currentWave * strategyReduction);
+        bossSpawned = false;
+        int enemiesToSpawn = baseEnemiesPerWave + Mathf.RoundToInt(currentWave * 2f);
 
         for (int i = 0; i < enemiesToSpawn; i++)
         {
@@ -69,49 +51,59 @@ public class WaveManager : MonoBehaviour
         }
 
         yield return new WaitUntil(() => enemiesAlive <= 0);
-        yield return new WaitForSeconds(strategyTime);
 
+        AudioManager.Instance.PlayBackgroundMusic();
+
+        yield return new WaitForSeconds(1f);
         currentWave++;
         StartCoroutine(RunWave());
     }
 
-    void SpawnEnemy()
+    private void SpawnEnemy()
     {
-        GameObject enemyGO = spawner.SpawnEnemyByWave(currentWave);
+        GameObject enemyGO = spawner.SpawnEnemyByWave(currentWave, bossSpawned);
         if (enemyGO == null) return;
 
         enemiesAlive++;
 
-        // --- Balloon ---
-        Balloon balloon = enemyGO.GetComponent<Balloon>();
-        Enemy enemy = enemyGO.GetComponent<Enemy>();
-
-        // Detecta si es jefe
-        EnemyEntry entry = spawner.enemies.Find(e => e.prefab == enemyGO);
-        if (entry != null && entry.isBoss)
+        EnemyEntry entry = GetEnemyEntry(enemyGO);
+        if (entry != null && entry.isBoss && !bossSpawned)
         {
+            bossSpawned = true;
             AudioManager.Instance.PlayBossMusic();
         }
+
+        Balloon balloon = enemyGO.GetComponent<Balloon>();
         if (balloon != null)
         {
             float waveFactor = currentWave - 1;
             balloon.speed *= 1f + (speedPerWave * waveFactor);
-            balloon.life = Mathf.RoundToInt(balloon.life * (1f + (lifePerWave * waveFactor)));
+            balloon.health = Mathf.RoundToInt(balloon.health * (1f + (lifePerWave * waveFactor)));
 
             if (waypoints != null) balloon.path = waypoints;
             balloon.waveManager = this;
             return;
         }
 
-        // --- Enemy ---
+        Enemy enemy = enemyGO.GetComponent<Enemy>();
         if (enemy != null)
         {
             if (waypoints != null) enemy.SetPath(waypoints);
+            enemy.waveManager = this;
             return;
         }
 
-        // Si no es ninguno de los dos
         Debug.LogWarning($"Prefab {enemyGO.name} no tiene Balloon ni Enemy.");
+    }
+
+    private EnemyEntry GetEnemyEntry(GameObject instance)
+    {
+        foreach (EnemyEntry e in spawner.enemies)
+        {
+            if (instance.name.StartsWith(e.prefab.name))
+                return e;
+        }
+        return null;
     }
 
     public void OnEnemyKilled()

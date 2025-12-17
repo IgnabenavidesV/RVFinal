@@ -4,7 +4,8 @@ public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance;
 
-    public AudioSource musicSource; // Este será el AudioSource que reproduce la música
+    [Header("Music")]
+    public AudioSource musicSource;
     public AudioClip backgroundMusic;
     public AudioClip bossMusic;
 
@@ -13,7 +14,7 @@ public class AudioManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // Para que persista entre escenas
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -21,22 +22,29 @@ public class AudioManager : MonoBehaviour
         }
     }
 
-    void Start()
-    {
-        PlayBackgroundMusic();
-    }
-
+    // ---------------------------
+    // Música normal
+    // ---------------------------
     public void PlayBackgroundMusic()
     {
+        if (musicSource.clip == backgroundMusic) return;
+
+        musicSource.Stop();
         musicSource.clip = backgroundMusic;
-        musicSource.loop = true;   // Repetir infinitamente
+        musicSource.loop = true;
         musicSource.Play();
     }
 
+    // ---------------------------
+    // Música de Boss
+    // ---------------------------
     public void PlayBossMusic()
     {
+        if (musicSource.clip == bossMusic) return;
+
+        musicSource.Stop();
         musicSource.clip = bossMusic;
-        musicSource.loop = true;   // Repetir mientras dure el boss
+        musicSource.loop = true;
         musicSource.Play();
     }
 }
