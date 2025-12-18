@@ -24,8 +24,9 @@ public class GameManager : MonoBehaviour
 
     [Header("UI")]
     public TMP_Text moneyText;
+    public TMP_Text livesText; // ✅ NUEVO
 
-    // === EVENTOS (para otras UI si quieres) ===
+    // === EVENTOS ===
     public event Action<int> OnLivesChanged;
     public event Action<int> OnWaveChanged;
     public event Action<bool> OnStrategyPhaseChanged;
@@ -34,13 +35,8 @@ public class GameManager : MonoBehaviour
 
     void Awake()
     {
-        if (Instance == null)
-            Instance = this;
-        else
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (Instance == null) Instance = this;
+        else { Destroy(gameObject); return; }
     }
 
     void Start()
@@ -52,6 +48,7 @@ public class GameManager : MonoBehaviour
         OnWaveChanged?.Invoke(currentWave);
 
         UpdateMoneyText();
+        UpdateLivesText(); // ✅
     }
 
     // -------------------------------------------------------
@@ -63,6 +60,7 @@ public class GameManager : MonoBehaviour
         if (currentLives < 0) currentLives = 0;
 
         OnLivesChanged?.Invoke(currentLives);
+        UpdateLivesText(); // ✅
 
         if (currentLives <= 0)
             TriggerGameOver();
@@ -129,16 +127,17 @@ public class GameManager : MonoBehaviour
         return false;
     }
 
-    public bool TryBuy(int cost)
-    {
-        return SpendMoney(cost);
-    }
+    public bool TryBuy(int cost) => SpendMoney(cost);
 
     void UpdateMoneyText()
     {
         if (moneyText != null)
             moneyText.text = money.ToString() + "$";
-        // Ejemplo alternativo:
-        // moneyText.text = $"Gold: {money}";
+    }
+
+    void UpdateLivesText()
+    {
+        if (livesText != null)
+            livesText.text = currentLives.ToString(); // o: $"{currentLives}/{maxLives}"
     }
 }
