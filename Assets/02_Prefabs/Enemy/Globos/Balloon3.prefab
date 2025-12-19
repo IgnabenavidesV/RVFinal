@@ -136,7 +136,7 @@ MonoBehaviour:
   rotationSpeed: 20
   deathClip: {fileID: 8300000, guid: d7a753239d4a2b849abc80b2f61bad85, type: 3}
   reachGoalClip: {fileID: 8300000, guid: 5f02f5559dae7b045acd0425a4af8cc5, type: 3}
-  moneyReward: 15
+  moneyReward: 25
   waveManager: {fileID: 0}
   deathExplosionPrefab: {fileID: 1121192042590650, guid: e1b08032bec16ba4eb1ae23cbd572664, type: 3}
   explosionOffset: {x: 0, y: 0, z: 0}
