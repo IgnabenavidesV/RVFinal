@@ -15,12 +15,12 @@ public class FireProjectile : MonoBehaviour
 
     public void SetTarget(Transform t) => target = t;
 
-    private void Start()
+    void Start()
     {
         Destroy(gameObject, lifeTime);
     }
 
-    private void Update()
+    void Update()
     {
         if (target == null)
         {
@@ -33,33 +33,38 @@ public class FireProjectile : MonoBehaviour
         transform.forward = dir;
     }
 
-    private void OnTriggerEnter(Collider col)
+    void OnTriggerEnter(Collider col)
     {
         if (!col.CompareTag("Enemy")) return;
 
         Explode();
-
         Destroy(gameObject);
     }
 
-    private void Explode()
+    void Explode()
     {
         Collider[] hits = Physics.OverlapSphere(transform.position, explosionRadius);
 
         foreach (Collider hit in hits)
         {
-            if (hit.CompareTag("Enemy"))
+            if (!hit.CompareTag("Enemy")) continue;
+
+            // Enemy normal
+            Enemy e = hit.GetComponentInParent<Enemy>();
+            if (e != null)
             {
-                Balloon enemy = hit.GetComponent<Balloon>();
-                if (enemy != null)
-                {
-                    enemy.TakeDamage(damage);
-                    enemy.ApplyBurn(burnDuration, burnDPS);
-                }
+                e.TakeDamage(damage);
+                e.ApplyBurn(burnDuration, burnDPS);
+                continue;
+            }
+
+            // Boss
+            Balloon b = hit.GetComponentInParent<Balloon>();
+            if (b != null)
+            {
+                b.TakeDamage(damage);
+                b.ApplyBurn(burnDuration, burnDPS);
             }
         }
-
-        // Debug visual del área
-        Debug.DrawRay(transform.position, Vector3.up * 2f, Color.red, 0.5f);
     }
 }

@@ -3,27 +3,17 @@ using UnityEngine.SceneManagement;
 
 public class MenuVR : MonoBehaviour
 {
-    public void IniciarJuego()
+    [Header("Scene to load")]
+    [SerializeField] private string sceneToLoad = "BasicScene";
+
+    public void Play()
     {
-        SceneManager.LoadScene("01_MainScene");
-        // Pon el nombre real de tu escena del mapa
+        // Seguridad: si la escena no está en Build Settings, no cargará
+        SceneManager.LoadScene(sceneToLoad);
     }
 
-    public void AbrirControles()
-    {
-        Debug.Log("Abrir menú de Controles");
-        // Aquí luego abrimos otro panel
-    }
-
-    public void AbrirSonido()
-    {
-        Debug.Log("Abrir menú de Sonido");
-        // Aquí luego abrimos sliders etc.
-    }
-
-    public void SalirJuego()
+    public void Quit()
     {
         Application.Quit();
-        Debug.Log("Salir del juego");
     }
 }

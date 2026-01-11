@@ -1,5 +1,7 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System;
+using UnityEngine.SceneManagement;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
@@ -17,7 +19,13 @@ public class GameManager : MonoBehaviour
     public float strategyTime = 5f;
     private float strategyTimer = 0f;
 
-    // === EVENTOS PARA UIManager ===
+    [Header("Economía")]
+    public int money = 0;
+
+    [Header("UI")]
+    public TMP_Text moneyText;
+
+    // === EVENTOS (para otras UI si quieres) ===
     public event Action<int> OnLivesChanged;
     public event Action<int> OnWaveChanged;
     public event Action<bool> OnStrategyPhaseChanged;
@@ -38,12 +46,16 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         currentLives = maxLives;
+        currentWave = 1;
+
         OnLivesChanged?.Invoke(currentLives);
         OnWaveChanged?.Invoke(currentWave);
+
+        UpdateMoneyText();
     }
 
     // -------------------------------------------------------
-    // Da�o al jugador
+    // Daño al jugador
     // -------------------------------------------------------
     public void TakeDamage(int amount = 1)
     {
@@ -59,7 +71,8 @@ public class GameManager : MonoBehaviour
     void TriggerGameOver()
     {
         OnGameOver?.Invoke();
-        Time.timeScale = 0f;
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("MainMenu");
     }
 
     // -------------------------------------------------------
@@ -94,5 +107,38 @@ public class GameManager : MonoBehaviour
 
         strategyPhaseActive = false;
         OnStrategyPhaseChanged?.Invoke(false);
+    }
+
+    // -------------------------------------------------------
+    // Dinero
+    // -------------------------------------------------------
+    public void AddMoney(int amount)
+    {
+        money += amount;
+        UpdateMoneyText();
+    }
+
+    public bool SpendMoney(int amount)
+    {
+        if (money >= amount)
+        {
+            money -= amount;
+            UpdateMoneyText();
+            return true;
+        }
+        return false;
+    }
+
+    public bool TryBuy(int cost)
+    {
+        return SpendMoney(cost);
+    }
+
+    void UpdateMoneyText()
+    {
+        if (moneyText != null)
+            moneyText.text = money.ToString() + "$";
+        // Ejemplo alternativo:
+        // moneyText.text = $"Gold: {money}";
     }
 }

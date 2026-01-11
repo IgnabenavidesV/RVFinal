@@ -1,32 +1,35 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PoisonProjectile : MonoBehaviour
 {
     public float speed = 12f;
+
+    [Header("Damage (Inspector)")]
     public int impactDamage = 2;
     public float poisonDuration = 6f;
     public float poisonDPS = 1.5f;
+
     public float lifeTime = 3f;
+    public float explosionRadius = 0f;
 
     private Transform target;
 
-    public void SetTarget(Transform t)
+    public void SetTarget(Transform t) => target = t;
+
+    // ✅ La torre puede llamarlo al instanciar
+    public void Configure(int dmg, float duration, float dps, float aoeRadius)
     {
-        target = t;
+        impactDamage = dmg;
+        poisonDuration = duration;
+        poisonDPS = dps;
+        explosionRadius = aoeRadius;
     }
 
-    void Start()
-    {
-        Destroy(gameObject, lifeTime);
-    }
+    void Start() => Destroy(gameObject, lifeTime);
 
     void Update()
     {
-        if (target == null)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (target == null) { Destroy(gameObject); return; }
 
         Vector3 dir = (target.position - transform.position).normalized;
         transform.position += dir * speed * Time.deltaTime;
@@ -37,14 +40,33 @@ public class PoisonProjectile : MonoBehaviour
     {
         if (!col.CompareTag("Enemy")) return;
 
-        Balloon b = col.GetComponent<Balloon>();
-
-        if (b != null)
-        {
-            b.TakeDamage(impactDamage);
-            b.ApplyPoison(poisonDuration, poisonDPS);
-        }
+        if (explosionRadius > 0f) Explode();
+        else ApplyToOne(col);
 
         Destroy(gameObject);
+    }
+
+    void ApplyToOne(Collider col)
+    {
+        Enemy e = col.GetComponentInParent<Enemy>();
+        if (e != null) { e.TakeDamage(impactDamage); e.ApplyPoison(poisonDuration, poisonDPS); return; }
+
+        Balloon b = col.GetComponentInParent<Balloon>();
+        if (b != null) { b.TakeDamage(impactDamage); b.ApplyPoison(poisonDuration, poisonDPS); }
+    }
+
+    void Explode()
+    {
+        Collider[] hits = Physics.OverlapSphere(transform.position, explosionRadius);
+        foreach (Collider hit in hits)
+        {
+            if (!hit.CompareTag("Enemy")) continue;
+
+            Enemy e = hit.GetComponentInParent<Enemy>();
+            if (e != null) { e.TakeDamage(impactDamage); e.ApplyPoison(poisonDuration, poisonDPS); continue; }
+
+            Balloon b = hit.GetComponentInParent<Balloon>();
+            if (b != null) { b.TakeDamage(impactDamage); b.ApplyPoison(poisonDuration, poisonDPS); }
+        }
     }
 }

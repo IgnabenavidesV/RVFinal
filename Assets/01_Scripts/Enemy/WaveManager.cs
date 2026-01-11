@@ -1,92 +1,114 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 
 public class WaveManager : MonoBehaviour
 {
     [Header("Spawner")]
     public EnemySpawner spawner;
+    private bool bossSpawned = false;
 
     [Header("Wave Settings")]
     public int currentWave = 1;
-    public int enemiesPerWave = 5;
-    public float spawnInterval = 1.5f;
-    public float strategyTime = 5f;
+    public int baseEnemiesPerWave = 5;
+    public float spawnInterval = 0.5f;
 
-    private int enemiesSpawned = 0;
+    [Header("Difficulty Scaling")]
+    public float speedPerWave = 0.08f;
+    public float lifePerWave = 0.15f;
+
     private int enemiesAlive = 0;
-
-    [Header("Dificultad")]
-    public float enemySpeedMultiplier = 0.10f;  // 10% por oleada
-    public float enemyLifeMultiplier = 0.20f;   // 20% por oleada
-    public float spawnRateMultiplier = 0.05f;   // reduce 0.05 segundos por oleada
-    public float strategyReductionPerWave = 0.2f;
+    private Transform[] waypoints;
 
     void Start()
     {
         if (spawner == null)
         {
-            Debug.LogError("WaveManager: No se asignó el EnemySpawner.");
+            Debug.LogError("WaveManager: EnemySpawner no asignado.");
             return;
         }
 
+        GameObject wpParent = GameObject.Find("Waypoints");
+        if (wpParent != null)
+        {
+            waypoints = new Transform[wpParent.transform.childCount];
+            for (int i = 0; i < wpParent.transform.childCount; i++)
+                waypoints[i] = wpParent.transform.GetChild(i);
+        }
+
+        AudioManager.Instance.PlayBackgroundMusic();
         StartCoroutine(RunWave());
     }
 
-    IEnumerator RunWave()
+    private IEnumerator RunWave()
     {
-        enemiesSpawned = 0;
-        enemiesAlive = 0;
+        bossSpawned = false;
+        int enemiesToSpawn = baseEnemiesPerWave + Mathf.RoundToInt(currentWave * 2f);
 
-        // SPAWN DE ENEMIGOS
-        while (enemiesSpawned < enemiesPerWave)
+        for (int i = 0; i < enemiesToSpawn; i++)
         {
             SpawnEnemy();
-            enemiesSpawned++;
             yield return new WaitForSeconds(spawnInterval);
         }
 
-        // ESPERAR A QUE MUERAN TODOS
         yield return new WaitUntil(() => enemiesAlive <= 0);
 
-        // TIEMPO EXTRA
-        yield return new WaitForSeconds(strategyTime);
+        AudioManager.Instance.PlayBackgroundMusic();
 
-        // SIGUIENTE WAVE
+        yield return new WaitForSeconds(1f);
         currentWave++;
-        enemiesPerWave += 2;
-
-        // AUMENTAR DIFICULTAD
-        spawnInterval = Mathf.Max(0.2f, spawnInterval - spawnRateMultiplier);
-        strategyTime = Mathf.Max(0f, strategyTime - strategyReductionPerWave);
-
         StartCoroutine(RunWave());
     }
 
-    public void SpawnEnemy()
+    private void SpawnEnemy()
     {
-        GameObject g = Instantiate(spawner.balloonPrefab, spawner.transform.position, Quaternion.identity);
-        Balloon balloon = g.GetComponent<Balloon>();
+        GameObject enemyGO = spawner.SpawnEnemyByWave(currentWave, bossSpawned);
+        if (enemyGO == null) return;
 
-        if (balloon == null)
+        enemiesAlive++;
+
+        EnemyEntry entry = GetEnemyEntry(enemyGO);
+        if (entry != null && entry.isBoss && !bossSpawned)
         {
-            Debug.LogError("El prefab del enemigo no tiene el script Balloon.");
+            bossSpawned = true;
+            AudioManager.Instance.PlayBossMusic();
+        }
+
+        Balloon balloon = enemyGO.GetComponent<Balloon>();
+        if (balloon != null)
+        {
+            float waveFactor = currentWave - 1;
+            balloon.speed *= 1f + (speedPerWave * waveFactor);
+            balloon.health = Mathf.RoundToInt(balloon.health * (1f + (lifePerWave * waveFactor)));
+
+            if (waypoints != null) balloon.path = waypoints;
+            balloon.waveManager = this;
             return;
         }
 
-        // Escalar dificultad por wave
-        float waveFactor = currentWave - 1;
+        Enemy enemy = enemyGO.GetComponent<Enemy>();
+        if (enemy != null)
+        {
+            if (waypoints != null) enemy.SetPath(waypoints);
+            enemy.waveManager = this;
+            return;
+        }
 
-        balloon.speed += balloon.speed * (enemySpeedMultiplier * waveFactor);
-        balloon.life += Mathf.RoundToInt(balloon.life * (enemyLifeMultiplier * waveFactor));
+        Debug.LogWarning($"Prefab {enemyGO.name} no tiene Balloon ni Enemy.");
+    }
 
-        balloon.waveManager = this;
-        enemiesAlive++;
+    private EnemyEntry GetEnemyEntry(GameObject instance)
+    {
+        foreach (EnemyEntry e in spawner.enemies)
+        {
+            if (instance.name.StartsWith(e.prefab.name))
+                return e;
+        }
+        return null;
     }
 
     public void OnEnemyKilled()
     {
         enemiesAlive--;
-        if (enemiesAlive < 0)
-            enemiesAlive = 0;
+        if (enemiesAlive < 0) enemiesAlive = 0;
     }
 }
